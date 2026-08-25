@@ -6,7 +6,7 @@ const TRANSLATIONS_DE = {
   of: 'von',
   sectionMeals: 'Mahlzeiten', sectionAdd: 'Eintrag hinzufügen',
   emptyDay: 'Noch keine Mahlzeiten für diesen Tag erfasst.',
-  namePlaceholder: 'z.B. Abendbrot Nudeln + Tofu',
+  namePlaceholder: 'z.B. Abendbrot',
   miniKcal: 'Kcal', miniProtein: 'Protein g', miniCarbs: 'Carbs g', miniFat: 'Fett g',
   addBtn: 'Hinzufügen', showWeek: 'Wochenübersicht anzeigen',
   wsKcalAvg: 'Ø kcal/Tag', wsProteinAvg: 'Ø Protein/Tag', wsDaysLogged: 'Tage geloggt',

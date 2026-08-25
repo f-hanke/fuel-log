@@ -6,7 +6,7 @@ const TRANSLATIONS_EN = {
   of: 'of',
   sectionMeals: 'Meals', sectionAdd: 'Add entry',
   emptyDay: 'No meals logged for this day yet.',
-  namePlaceholder: 'e.g. Dinner pasta + tofu',
+  namePlaceholder: 'e.g. Dinner',
   miniKcal: 'Kcal', miniProtein: 'Protein g', miniCarbs: 'Carbs g', miniFat: 'Fat g',
   addBtn: 'Add', showWeek: 'Show weekly overview',
   wsKcalAvg: 'Avg kcal/day', wsProteinAvg: 'Avg protein/day', wsDaysLogged: 'Days logged',
