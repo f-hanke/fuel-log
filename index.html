@@ -547,7 +547,21 @@ renderDay();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(() => {});
+    navigator.serviceWorker.register("sw.js").then((reg) => {
+      // Force a fresh check for a newer sw.js every time the app is opened,
+      // instead of waiting for the browser's own (slow/unreliable) update timer
+      reg.update();
+    }).catch(() => {});
+  });
+
+  // Once a new service worker takes control (new version activated),
+  // reload automatically so the update is visible without closing the app —
+  // this never touches localStorage, so logged meals are never affected
+  let reloadedForUpdate = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (reloadedForUpdate) return;
+    reloadedForUpdate = true;
+    window.location.reload();
   });
 }
 </script>
