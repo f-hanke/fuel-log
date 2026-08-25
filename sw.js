@@ -1,11 +1,13 @@
 // Bump this on every deploy so the cache below gets invalidated — otherwise
 // installed phones keep serving the old cached files forever.
-const CACHE_NAME = "fuellog-v7";
+const CACHE_NAME = "fuellog-v8";
 const ASSETS = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
+  "./i18n/de.js",
+  "./i18n/en.js",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

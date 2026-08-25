@@ -1,0 +1,16 @@
+const TRANSLATIONS_DE = {
+  dow: ['So','Mo','Di','Mi','Do','Fr','Sa'],
+  mon: ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
+  brandSub: 'Ernährungstracker', today: 'HEUTE',
+  labelKcal: 'kcal', labelProtein: 'Protein g', labelCarbs: 'Carbs g', labelFat: 'Fett g',
+  of: 'von',
+  sectionMeals: 'Mahlzeiten', sectionAdd: 'Eintrag hinzufügen',
+  emptyDay: 'Noch keine Mahlzeiten für diesen Tag erfasst.',
+  namePlaceholder: 'z.B. Abendbrot Nudeln + Tofu',
+  miniKcal: 'Kcal', miniProtein: 'Protein g', miniCarbs: 'Carbs g', miniFat: 'Fett g',
+  addBtn: 'Hinzufügen', showWeek: 'Wochenübersicht anzeigen',
+  wsKcalAvg: 'Ø kcal/Tag', wsProteinAvg: 'Ø Protein/Tag', wsDaysLogged: 'Tage geloggt',
+  backToDay: 'Zurück zum Tag',
+  deleteTitle: 'Eintrag löschen?', no: 'Nein', yesDelete: 'Ja, löschen',
+  meal: 'Mahlzeit', deleteTooltip: 'Löschen', loadingWeek: 'Lade Woche…',
+};

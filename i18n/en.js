@@ -1,0 +1,16 @@
+const TRANSLATIONS_EN = {
+  dow: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+  mon: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  brandSub: 'Nutrition Tracker', today: 'TODAY',
+  labelKcal: 'kcal', labelProtein: 'Protein g', labelCarbs: 'Carbs g', labelFat: 'Fat g',
+  of: 'of',
+  sectionMeals: 'Meals', sectionAdd: 'Add entry',
+  emptyDay: 'No meals logged for this day yet.',
+  namePlaceholder: 'e.g. Dinner pasta + tofu',
+  miniKcal: 'Kcal', miniProtein: 'Protein g', miniCarbs: 'Carbs g', miniFat: 'Fat g',
+  addBtn: 'Add', showWeek: 'Show weekly overview',
+  wsKcalAvg: 'Avg kcal/day', wsProteinAvg: 'Avg protein/day', wsDaysLogged: 'Days logged',
+  backToDay: 'Back to day',
+  deleteTitle: 'Delete entry?', no: 'No', yesDelete: 'Yes, delete',
+  meal: 'Meal', deleteTooltip: 'Delete', loadingWeek: 'Loading week…',
+};

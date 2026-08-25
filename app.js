@@ -1,45 +1,9 @@
 const TARGETS = { kcal: 3200, protein: 130, carbs: 460, fat: 90 };
 
-const DOW = {
-  de: ['So','Mo','Di','Mi','Do','Fr','Sa'],
-  en: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
-};
-const MON = {
-  de: ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
-  en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-};
-
-// UI text in both languages. t(key) below looks up the active language.
-const TRANSLATIONS = {
-  de: {
-    brandSub: 'Ernährungstracker', today: 'HEUTE',
-    labelKcal: 'kcal', labelProtein: 'Protein g', labelCarbs: 'Carbs g', labelFat: 'Fett g',
-    of: 'von',
-    sectionMeals: 'Mahlzeiten', sectionAdd: 'Eintrag hinzufügen',
-    emptyDay: 'Noch keine Mahlzeiten für diesen Tag erfasst.',
-    namePlaceholder: 'z.B. Abendbrot Nudeln + Tofu',
-    miniKcal: 'Kcal', miniProtein: 'Protein g', miniCarbs: 'Carbs g', miniFat: 'Fett g',
-    addBtn: 'Hinzufügen', showWeek: 'Wochenübersicht anzeigen',
-    wsKcalAvg: 'Ø kcal/Tag', wsProteinAvg: 'Ø Protein/Tag', wsDaysLogged: 'Tage geloggt',
-    backToDay: 'Zurück zum Tag',
-    deleteTitle: 'Eintrag löschen?', no: 'Nein', yesDelete: 'Ja, löschen',
-    meal: 'Mahlzeit', deleteTooltip: 'Löschen', loadingWeek: 'Lade Woche…',
-  },
-  en: {
-    brandSub: 'Nutrition Tracker', today: 'TODAY',
-    labelKcal: 'kcal', labelProtein: 'Protein g', labelCarbs: 'Carbs g', labelFat: 'Fat g',
-    of: 'of',
-    sectionMeals: 'Meals', sectionAdd: 'Add entry',
-    emptyDay: 'No meals logged for this day yet.',
-    namePlaceholder: 'e.g. Dinner pasta + tofu',
-    miniKcal: 'Kcal', miniProtein: 'Protein g', miniCarbs: 'Carbs g', miniFat: 'Fat g',
-    addBtn: 'Add', showWeek: 'Show weekly overview',
-    wsKcalAvg: 'Avg kcal/day', wsProteinAvg: 'Avg protein/day', wsDaysLogged: 'Days logged',
-    backToDay: 'Back to day',
-    deleteTitle: 'Delete entry?', no: 'No', yesDelete: 'Yes, delete',
-    meal: 'Meal', deleteTooltip: 'Delete', loadingWeek: 'Loading week…',
-  },
-};
+// UI text lives in i18n/de.js and i18n/en.js (loaded before this file), each
+// defining a TRANSLATIONS_DE / TRANSLATIONS_EN object. t(key) below looks up
+// the active language.
+const TRANSLATIONS = { de: TRANSLATIONS_DE, en: TRANSLATIONS_EN };
 
 let lang = localStorage.getItem('fuellog:lang') === 'en' ? 'en' : 'de';
 function t(key){ return TRANSLATIONS[lang][key]; }
@@ -73,7 +37,7 @@ function fmtKey(d){
 }
 // Date -> human-readable label (in the active language) shown in the date bar
 function fmtLabel(d){
-  return `${DOW[lang][d.getDay()]}, ${d.getDate()}. ${MON[lang][d.getMonth()]} ${d.getFullYear()}`;
+  return `${t('dow')[d.getDay()]}, ${d.getDate()}. ${t('mon')[d.getMonth()]} ${d.getFullYear()}`;
 }
 function isSameDay(a,b){ return fmtKey(a)===fmtKey(b); }
 
@@ -281,7 +245,7 @@ async function renderWeek(){
     const row = document.createElement('div');
     row.className = 'week-day' + (isSameDay(r.date, new Date()) ? ' is-today' : '');
     row.innerHTML = `
-      <div class="wd-label">${DOW[lang][r.date.getDay()]}<span class="wd-date">${r.date.getDate()}.${r.date.getMonth()+1}.</span></div>
+      <div class="wd-label">${t('dow')[r.date.getDay()]}<span class="wd-date">${r.date.getDate()}.${r.date.getMonth()+1}.</span></div>
       <div class="wd-bar-track"><div class="wd-bar-fill" style="width:${pct(r.totals.kcal, TARGETS.kcal)}%"></div></div>
       <div class="wd-kcal">${r.logged ? Math.round(r.totals.kcal) : '–'}</div>
     `;
