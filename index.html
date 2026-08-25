@@ -320,10 +320,12 @@ const TARGETS = { kcal: 3200, protein: 130, carbs: 460, fat: 90 };
 const DOW = ['So','Mo','Di','Mi','Do','Fr','Sa'];
 const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
 
+// Date -> "YYYY-MM-DD", used as the localStorage key suffix for a day's entries
 function fmtKey(d){
   const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
+// Date -> human-readable German label shown in the date bar
 function fmtLabel(d){
   return `${DOW[d.getDay()]}, ${d.getDate()}. ${MON[d.getMonth()]} ${d.getFullYear()}`;
 }
@@ -332,6 +334,7 @@ function isSameDay(a,b){ return fmtKey(a)===fmtKey(b); }
 let currentDate = new Date();
 let currentEntries = [];
 
+// Load all logged meals for one day from localStorage (empty array if none/corrupt)
 async function loadEntries(dateObj){
   const key = 'fuellog:entries:' + fmtKey(dateObj);
   try{
@@ -341,6 +344,7 @@ async function loadEntries(dateObj){
     return [];
   }
 }
+// Persist one day's meal list to localStorage, keyed by date
 async function saveEntries(dateObj, entries){
   const key = 'fuellog:entries:' + fmtKey(dateObj);
   try{
@@ -350,6 +354,7 @@ async function saveEntries(dateObj, entries){
   }
 }
 
+// Add up kcal/protein/carbs/fat across a day's meal entries
 function sumEntries(entries){
   return entries.reduce((acc,e)=>{
     acc.kcal += Number(e.kcal)||0;
@@ -360,8 +365,11 @@ function sumEntries(entries){
   }, {kcal:0,protein:0,carbs:0,fat:0});
 }
 
+// Clamp a value's percentage of a target to 0-100, for progress bar widths
 function pct(val, target){ return Math.max(0, Math.min(100, Math.round((val/target)*100))); }
 
+// Main day-view render: loads the day's entries, updates the macro stat tiles/bars
+// and rebuilds the meal list. Called on load, day navigation, add, and delete.
 async function renderDay(){
   document.getElementById('dateText').textContent = fmtLabel(currentDate);
   document.getElementById('todayTag').classList.toggle('hidden', !isSameDay(currentDate, new Date()));
@@ -416,6 +424,8 @@ async function renderDay(){
 
 let pendingDeleteIdx = null;
 
+// Open the delete-confirmation popup for the meal at this index (nothing is
+// deleted yet — only the confirm button in the modal actually removes it)
 function openDeleteModal(idx){
   pendingDeleteIdx = idx;
   const entry = currentEntries[idx];
@@ -440,6 +450,7 @@ document.getElementById('deleteConfirmBtn').addEventListener('click', async ()=>
   renderDay();
 });
 
+// Escape user-entered meal names before inserting them as innerHTML, to avoid XSS
 function escapeHtml(str){
   const d = document.createElement('div');
   d.textContent = str;
@@ -455,6 +466,7 @@ document.getElementById('nextDay').addEventListener('click', ()=>{
   renderDay();
 });
 
+// Read the add-meal form, append a new entry for the current day, save and re-render
 document.getElementById('addBtn').addEventListener('click', async ()=>{
   const name = document.getElementById('mName').value.trim();
   const kcal = document.getElementById('mKcal').value;
@@ -487,10 +499,13 @@ document.getElementById('toggleWeekBack').addEventListener('click', ()=>{
   document.getElementById('dayView').classList.remove('hidden');
 });
 
+// Week-view render: builds the Mon-Sun calendar week containing today, loads each
+// day's entries, shows the weekly kcal/protein average and a per-day kcal bar list
 async function renderWeek(){
   const listEl = document.getElementById('weekList');
   listEl.innerHTML = '<div class="loading">Lade Woche…</div>';
 
+  // Find this week's Monday, regardless of which weekday "today" is
   const today = new Date();
   const dow = today.getDay(); // 0=So, 1=Mo, ... 6=Sa
   const diffToMonday = (dow === 0 ? -6 : 1 - dow);
