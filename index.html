@@ -186,6 +186,30 @@
 
   .loading{text-align:center; color:var(--ink-dim); padding:30px; font-family:var(--font-mono); font-size:12px;}
   .hidden{display:none !important;}
+
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.55);
+    display:flex; align-items:center; justify-content:center;
+    padding:20px; z-index:100;
+  }
+  .modal-box{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:12px;
+    padding:20px; max-width:340px; width:100%;
+  }
+  .modal-box .modal-title{font-size:15px; font-weight:600; margin-bottom:4px;}
+  .modal-box .modal-text{
+    font-family:var(--font-mono); font-size:12px; color:var(--ink-dim); margin-bottom:18px;
+  }
+  .modal-actions{display:flex; gap:10px;}
+  .modal-actions button{
+    flex:1; border-radius:8px; padding:11px; font-family:var(--font-mono);
+    font-weight:700; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    cursor:pointer; border:1px solid var(--line);
+  }
+  .modal-btn-cancel{background:var(--bg-panel-2); color:var(--ink);}
+  .modal-btn-cancel:hover{border-color:var(--ink-dim);}
+  .modal-btn-confirm{background:var(--red); color:#0F1613; border-color:var(--red);}
+  .modal-btn-confirm:hover{background:#F2846F;}
 </style>
 </head>
 <body>
@@ -280,6 +304,17 @@
 
 </div>
 
+<div class="modal-overlay hidden" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-title">Eintrag löschen?</div>
+    <div class="modal-text" id="deleteModalText"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="deleteCancelBtn">Nein</button>
+      <button class="modal-btn-confirm" id="deleteConfirmBtn">Ja, löschen</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const TARGETS = { kcal: 3200, protein: 130, carbs: 460, fat: 90 };
 const DOW = ['So','Mo','Di','Mi','Do','Fr','Sa'];
@@ -371,15 +406,39 @@ async function renderDay(){
       listEl.appendChild(row);
     });
     listEl.querySelectorAll('.del-btn').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
+      btn.addEventListener('click', ()=>{
         const idx = Number(btn.getAttribute('data-idx'));
-        currentEntries.splice(idx,1);
-        await saveEntries(currentDate, currentEntries);
-        renderDay();
+        openDeleteModal(idx);
       });
     });
   }
 }
+
+let pendingDeleteIdx = null;
+
+function openDeleteModal(idx){
+  pendingDeleteIdx = idx;
+  const entry = currentEntries[idx];
+  document.getElementById('deleteModalText').textContent = entry ? (entry.name || 'Mahlzeit') : '';
+  document.getElementById('deleteModal').classList.remove('hidden');
+}
+
+function closeDeleteModal(){
+  pendingDeleteIdx = null;
+  document.getElementById('deleteModal').classList.add('hidden');
+}
+
+document.getElementById('deleteCancelBtn').addEventListener('click', closeDeleteModal);
+document.getElementById('deleteModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'deleteModal') closeDeleteModal();
+});
+document.getElementById('deleteConfirmBtn').addEventListener('click', async ()=>{
+  if(pendingDeleteIdx === null) return;
+  currentEntries.splice(pendingDeleteIdx, 1);
+  await saveEntries(currentDate, currentEntries);
+  closeDeleteModal();
+  renderDay();
+});
 
 function escapeHtml(str){
   const d = document.createElement('div');
