@@ -1,4 +1,4 @@
-const CACHE_NAME = "fuellog-v2";
+const CACHE_NAME = "fuellog-v3";
 const ASSETS = [
   "./",
   "./index.html",
