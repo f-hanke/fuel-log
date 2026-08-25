@@ -17,14 +17,15 @@
 <div class="wrap">
 
   <div class="topbar">
-    <div class="brand">Fuel Log<small>Ernährungstracker</small></div>
+    <div class="brand">Fuel Log<small data-i18n="brandSub">Ernährungstracker</small></div>
+    <button class="lang-toggle" id="langToggle" title="Language / Sprache">🌐 <span id="langToggleLabel">EN</span></button>
   </div>
 
   <div class="datebar" id="datebar">
     <button id="prevDay">‹</button>
     <div class="datelabel">
       <span id="dateText">–</span>
-      <span class="today-tag hidden" id="todayTag">HEUTE</span>
+      <span class="today-tag hidden" id="todayTag" data-i18n="today">HEUTE</span>
     </div>
     <button id="nextDay">›</button>
   </div>
@@ -33,73 +34,73 @@
     <div class="ring-row">
       <div class="stat kcal">
         <div class="num" id="statKcal">0</div>
-        <div class="label">kcal</div>
+        <div class="label" data-i18n="labelKcal">kcal</div>
         <div class="sub" id="statKcalSub">von 3200</div>
         <div class="bar-track"><div class="bar-fill" id="barKcal" style="width:0%"></div></div>
       </div>
       <div class="stat protein">
         <div class="num" id="statProtein">0</div>
-        <div class="label">Protein g</div>
+        <div class="label" data-i18n="labelProtein">Protein g</div>
         <div class="sub" id="statProteinSub">von 130</div>
         <div class="bar-track protein"><div class="bar-fill" id="barProtein" style="width:0%"></div></div>
       </div>
       <div class="stat carbs">
         <div class="num" id="statCarbs">0</div>
-        <div class="label">Carbs g</div>
+        <div class="label" data-i18n="labelCarbs">Carbs g</div>
         <div class="sub" id="statCarbsSub">von 460</div>
         <div class="bar-track carbs"><div class="bar-fill" id="barCarbs" style="width:0%"></div></div>
       </div>
       <div class="stat fat">
         <div class="num" id="statFat">0</div>
-        <div class="label">Fett g</div>
+        <div class="label" data-i18n="labelFat">Fett g</div>
         <div class="sub" id="statFatSub">von 90</div>
         <div class="bar-track fat"><div class="bar-fill" id="barFat" style="width:0%"></div></div>
       </div>
     </div>
 
-    <div class="section-title">Mahlzeiten</div>
+    <div class="section-title" data-i18n="sectionMeals">Mahlzeiten</div>
     <div id="mealList"></div>
 
-    <div class="section-title">Eintrag hinzufügen</div>
+    <div class="section-title" data-i18n="sectionAdd">Eintrag hinzufügen</div>
     <div class="addform">
       <div class="row">
-        <input type="text" class="name-input" id="mName" placeholder="z.B. Abendbrot Nudeln + Tofu">
+        <input type="text" class="name-input" id="mName" placeholder="z.B. Abendbrot Nudeln + Tofu" data-i18n-placeholder="namePlaceholder">
       </div>
       <div class="row macrow">
         <div class="macrocell">
-          <label class="mini">Kcal</label>
+          <label class="mini" data-i18n="miniKcal">Kcal</label>
           <input type="number" id="mKcal" placeholder="0" min="0">
         </div>
         <div class="macrocell">
-          <label class="mini">Protein g</label>
+          <label class="mini" data-i18n="miniProtein">Protein g</label>
           <input type="number" id="mProtein" placeholder="0" min="0">
         </div>
         <div class="macrocell">
-          <label class="mini">Carbs g</label>
+          <label class="mini" data-i18n="miniCarbs">Carbs g</label>
           <input type="number" id="mCarbs" placeholder="0" min="0">
         </div>
         <div class="macrocell">
-          <label class="mini">Fett g</label>
+          <label class="mini" data-i18n="miniFat">Fett g</label>
           <input type="number" id="mFat" placeholder="0" min="0">
         </div>
       </div>
-      <button class="add-submit" id="addBtn">Hinzufügen</button>
+      <button class="add-submit" id="addBtn" data-i18n="addBtn">Hinzufügen</button>
     </div>
 
     <div class="week-toggle">
-      <button id="toggleWeek">Wochenübersicht anzeigen</button>
+      <button id="toggleWeek" data-i18n="showWeek">Wochenübersicht anzeigen</button>
     </div>
   </div>
 
   <div id="weekView" class="week-panel hidden">
     <div class="week-summary">
-      <div><div class="wsnum" id="wsKcalAvg">0</div><div class="wslabel">Ø kcal/Tag</div></div>
-      <div><div class="wsnum" id="wsProteinAvg">0</div><div class="wslabel">Ø Protein/Tag</div></div>
-      <div><div class="wsnum" id="wsDaysLogged">0</div><div class="wslabel">Tage geloggt</div></div>
+      <div><div class="wsnum" id="wsKcalAvg">0</div><div class="wslabel" data-i18n="wsKcalAvg">Ø kcal/Tag</div></div>
+      <div><div class="wsnum" id="wsProteinAvg">0</div><div class="wslabel" data-i18n="wsProteinAvg">Ø Protein/Tag</div></div>
+      <div><div class="wsnum" id="wsDaysLogged">0</div><div class="wslabel" data-i18n="wsDaysLogged">Tage geloggt</div></div>
     </div>
     <div id="weekList"></div>
     <div class="week-toggle">
-      <button id="toggleWeekBack">Zurück zum Tag</button>
+      <button id="toggleWeekBack" data-i18n="backToDay">Zurück zum Tag</button>
     </div>
   </div>
 
@@ -107,11 +108,11 @@
 
 <div class="modal-overlay hidden" id="deleteModal">
   <div class="modal-box">
-    <div class="modal-title">Eintrag löschen?</div>
+    <div class="modal-title" data-i18n="deleteTitle">Eintrag löschen?</div>
     <div class="modal-text" id="deleteModalText"></div>
     <div class="modal-actions">
-      <button class="modal-btn-cancel" id="deleteCancelBtn">Nein</button>
-      <button class="modal-btn-confirm" id="deleteConfirmBtn">Ja, löschen</button>
+      <button class="modal-btn-cancel" id="deleteCancelBtn" data-i18n="no">Nein</button>
+      <button class="modal-btn-confirm" id="deleteConfirmBtn" data-i18n="yesDelete">Ja, löschen</button>
     </div>
   </div>
 </div>

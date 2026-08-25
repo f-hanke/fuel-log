@@ -1,15 +1,79 @@
 const TARGETS = { kcal: 3200, protein: 130, carbs: 460, fat: 90 };
-const DOW = ['So','Mo','Di','Mi','Do','Fr','Sa'];
-const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+
+const DOW = {
+  de: ['So','Mo','Di','Mi','Do','Fr','Sa'],
+  en: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+};
+const MON = {
+  de: ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
+  en: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+};
+
+// UI text in both languages. t(key) below looks up the active language.
+const TRANSLATIONS = {
+  de: {
+    brandSub: 'Ernährungstracker', today: 'HEUTE',
+    labelKcal: 'kcal', labelProtein: 'Protein g', labelCarbs: 'Carbs g', labelFat: 'Fett g',
+    of: 'von',
+    sectionMeals: 'Mahlzeiten', sectionAdd: 'Eintrag hinzufügen',
+    emptyDay: 'Noch keine Mahlzeiten für diesen Tag erfasst.',
+    namePlaceholder: 'z.B. Abendbrot Nudeln + Tofu',
+    miniKcal: 'Kcal', miniProtein: 'Protein g', miniCarbs: 'Carbs g', miniFat: 'Fett g',
+    addBtn: 'Hinzufügen', showWeek: 'Wochenübersicht anzeigen',
+    wsKcalAvg: 'Ø kcal/Tag', wsProteinAvg: 'Ø Protein/Tag', wsDaysLogged: 'Tage geloggt',
+    backToDay: 'Zurück zum Tag',
+    deleteTitle: 'Eintrag löschen?', no: 'Nein', yesDelete: 'Ja, löschen',
+    meal: 'Mahlzeit', deleteTooltip: 'Löschen', loadingWeek: 'Lade Woche…',
+  },
+  en: {
+    brandSub: 'Nutrition Tracker', today: 'TODAY',
+    labelKcal: 'kcal', labelProtein: 'Protein g', labelCarbs: 'Carbs g', labelFat: 'Fat g',
+    of: 'of',
+    sectionMeals: 'Meals', sectionAdd: 'Add entry',
+    emptyDay: 'No meals logged for this day yet.',
+    namePlaceholder: 'e.g. Dinner pasta + tofu',
+    miniKcal: 'Kcal', miniProtein: 'Protein g', miniCarbs: 'Carbs g', miniFat: 'Fat g',
+    addBtn: 'Add', showWeek: 'Show weekly overview',
+    wsKcalAvg: 'Avg kcal/day', wsProteinAvg: 'Avg protein/day', wsDaysLogged: 'Days logged',
+    backToDay: 'Back to day',
+    deleteTitle: 'Delete entry?', no: 'No', yesDelete: 'Yes, delete',
+    meal: 'Meal', deleteTooltip: 'Delete', loadingWeek: 'Loading week…',
+  },
+};
+
+let lang = localStorage.getItem('fuellog:lang') === 'en' ? 'en' : 'de';
+function t(key){ return TRANSLATIONS[lang][key]; }
+
+// Apply the active language to every static (non-rendered) piece of UI text
+function applyStaticTranslations(){
+  document.documentElement.lang = lang;
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+  });
+  document.getElementById('langToggleLabel').textContent = lang === 'de' ? 'EN' : 'DE';
+}
+
+document.getElementById('langToggle').addEventListener('click', async () => {
+  lang = lang === 'de' ? 'en' : 'de';
+  localStorage.setItem('fuellog:lang', lang);
+  applyStaticTranslations();
+  await renderDay();
+  if(!document.getElementById('weekView').classList.contains('hidden')){
+    await renderWeek();
+  }
+});
 
 // Date -> "YYYY-MM-DD", used as the localStorage key suffix for a day's entries
 function fmtKey(d){
   const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
 }
-// Date -> human-readable German label shown in the date bar
+// Date -> human-readable label (in the active language) shown in the date bar
 function fmtLabel(d){
-  return `${DOW[d.getDay()]}, ${d.getDate()}. ${MON[d.getMonth()]} ${d.getFullYear()}`;
+  return `${DOW[lang][d.getDay()]}, ${d.getDate()}. ${MON[lang][d.getMonth()]} ${d.getFullYear()}`;
 }
 function isSameDay(a,b){ return fmtKey(a)===fmtKey(b); }
 
@@ -60,37 +124,37 @@ async function renderDay(){
   const totals = sumEntries(currentEntries);
 
   document.getElementById('statKcal').textContent = Math.round(totals.kcal);
-  document.getElementById('statKcalSub').textContent = `von ${TARGETS.kcal}`;
+  document.getElementById('statKcalSub').textContent = `${t('of')} ${TARGETS.kcal}`;
   document.getElementById('barKcal').style.width = pct(totals.kcal, TARGETS.kcal) + '%';
 
   document.getElementById('statProtein').textContent = Math.round(totals.protein);
-  document.getElementById('statProteinSub').textContent = `von ${TARGETS.protein}`;
+  document.getElementById('statProteinSub').textContent = `${t('of')} ${TARGETS.protein}`;
   document.getElementById('barProtein').style.width = pct(totals.protein, TARGETS.protein) + '%';
 
   document.getElementById('statCarbs').textContent = Math.round(totals.carbs);
-  document.getElementById('statCarbsSub').textContent = `von ${TARGETS.carbs}`;
+  document.getElementById('statCarbsSub').textContent = `${t('of')} ${TARGETS.carbs}`;
   document.getElementById('barCarbs').style.width = pct(totals.carbs, TARGETS.carbs) + '%';
 
   document.getElementById('statFat').textContent = Math.round(totals.fat);
-  document.getElementById('statFatSub').textContent = `von ${TARGETS.fat}`;
+  document.getElementById('statFatSub').textContent = `${t('of')} ${TARGETS.fat}`;
   document.getElementById('barFat').style.width = pct(totals.fat, TARGETS.fat) + '%';
 
   const listEl = document.getElementById('mealList');
   listEl.innerHTML = '';
   if(currentEntries.length === 0){
-    listEl.innerHTML = '<div class="empty">Noch keine Mahlzeiten für diesen Tag erfasst.</div>';
+    listEl.innerHTML = `<div class="empty">${t('emptyDay')}</div>`;
   } else {
     currentEntries.forEach((e, idx)=>{
       const row = document.createElement('div');
       row.className = 'meal';
       row.innerHTML = `
         <div>
-          <div class="name">${escapeHtml(e.name || 'Mahlzeit')}</div>
+          <div class="name">${escapeHtml(e.name || t('meal'))}</div>
           <div class="macros">P ${Math.round(e.protein)||0}g · C ${Math.round(e.carbs)||0}g · F ${Math.round(e.fat)||0}g</div>
         </div>
         <div class="meal-right">
           <span class="kcalval">${Math.round(e.kcal)||0}</span>
-          <button class="del-btn" data-idx="${idx}" title="Löschen">✕</button>
+          <button class="del-btn" data-idx="${idx}" title="${t('deleteTooltip')}">✕</button>
         </div>
       `;
       listEl.appendChild(row);
@@ -111,7 +175,7 @@ let pendingDeleteIdx = null;
 function openDeleteModal(idx){
   pendingDeleteIdx = idx;
   const entry = currentEntries[idx];
-  document.getElementById('deleteModalText').textContent = entry ? (entry.name || 'Mahlzeit') : '';
+  document.getElementById('deleteModalText').textContent = entry ? (entry.name || t('meal')) : '';
   document.getElementById('deleteModal').classList.remove('hidden');
 }
 
@@ -185,7 +249,7 @@ document.getElementById('toggleWeekBack').addEventListener('click', ()=>{
 // day's entries, shows the weekly kcal/protein average and a per-day kcal bar list
 async function renderWeek(){
   const listEl = document.getElementById('weekList');
-  listEl.innerHTML = '<div class="loading">Lade Woche…</div>';
+  listEl.innerHTML = `<div class="loading">${t('loadingWeek')}</div>`;
 
   // Find this week's Monday, regardless of which weekday "today" is
   const today = new Date();
@@ -217,7 +281,7 @@ async function renderWeek(){
     const row = document.createElement('div');
     row.className = 'week-day' + (isSameDay(r.date, new Date()) ? ' is-today' : '');
     row.innerHTML = `
-      <div class="wd-label">${DOW[r.date.getDay()]}<span class="wd-date">${r.date.getDate()}.${r.date.getMonth()+1}.</span></div>
+      <div class="wd-label">${DOW[lang][r.date.getDay()]}<span class="wd-date">${r.date.getDate()}.${r.date.getMonth()+1}.</span></div>
       <div class="wd-bar-track"><div class="wd-bar-fill" style="width:${pct(r.totals.kcal, TARGETS.kcal)}%"></div></div>
       <div class="wd-kcal">${r.logged ? Math.round(r.totals.kcal) : '–'}</div>
     `;
@@ -225,6 +289,7 @@ async function renderWeek(){
   });
 }
 
+applyStaticTranslations();
 renderDay();
 
 if ("serviceWorker" in navigator) {
