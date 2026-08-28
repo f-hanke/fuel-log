@@ -276,7 +276,10 @@ if ("serviceWorker" in navigator) {
   let swRegistration = null;
 
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").then((reg) => {
+    // updateViaCache:'none' tells the browser to never reuse an HTTP-cached copy of
+    // sw.js for update checks — always hit the network, so stale CDN/browser caching
+    // can't hide a new version from us
+    navigator.serviceWorker.register("sw.js", { updateViaCache: 'none' }).then((reg) => {
       swRegistration = reg;
       // Force a fresh check for a newer sw.js every time the app is opened,
       // instead of waiting for the browser's own (slow/unreliable) update timer
