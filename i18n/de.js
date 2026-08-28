@@ -13,4 +13,5 @@ const TRANSLATIONS_DE = {
   backToDay: 'Zurück zum Tag',
   deleteTitle: 'Eintrag löschen?', no: 'Nein', yesDelete: 'Ja, löschen',
   meal: 'Mahlzeit', deleteTooltip: 'Löschen', loadingWeek: 'Lade Woche…',
+  editTitle: 'Eintrag bearbeiten', editTooltip: 'Bearbeiten', save: 'Speichern', cancel: 'Abbrechen',
 };

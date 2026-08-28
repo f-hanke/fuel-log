@@ -13,4 +13,5 @@ const TRANSLATIONS_EN = {
   backToDay: 'Back to day',
   deleteTitle: 'Delete entry?', no: 'No', yesDelete: 'Yes, delete',
   meal: 'Meal', deleteTooltip: 'Delete', loadingWeek: 'Loading week…',
+  editTitle: 'Edit entry', editTooltip: 'Edit', save: 'Save', cancel: 'Cancel',
 };

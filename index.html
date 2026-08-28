@@ -122,6 +122,37 @@
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="editModal">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="editTitle">Eintrag bearbeiten</div>
+    <div class="row">
+      <input type="text" class="name-input" id="eName" data-i18n-placeholder="namePlaceholder">
+    </div>
+    <div class="row macrow">
+      <div class="macrocell">
+        <label class="mini" data-i18n="miniKcal">Kcal</label>
+        <input type="number" id="eKcal" placeholder="0" min="0">
+      </div>
+      <div class="macrocell">
+        <label class="mini" data-i18n="miniProtein">Protein g</label>
+        <input type="number" id="eProtein" placeholder="0" min="0">
+      </div>
+      <div class="macrocell">
+        <label class="mini" data-i18n="miniCarbs">Carbs g</label>
+        <input type="number" id="eCarbs" placeholder="0" min="0">
+      </div>
+      <div class="macrocell">
+        <label class="mini" data-i18n="miniFat">Fett g</label>
+        <input type="number" id="eFat" placeholder="0" min="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="editCancelBtn" data-i18n="cancel">Abbrechen</button>
+      <button class="modal-btn-confirm modal-btn-save" id="editSaveBtn" data-i18n="save">Speichern</button>
+    </div>
+  </div>
+</div>
+
 <script src="i18n/de.js"></script>
 <script src="i18n/en.js"></script>
 <script src="app.js"></script>

@@ -118,10 +118,17 @@ async function renderDay(){
         </div>
         <div class="meal-right">
           <span class="kcalval">${Math.round(e.kcal)||0}</span>
+          <button class="edit-btn" data-idx="${idx}" title="${t('editTooltip')}">✎</button>
           <button class="del-btn" data-idx="${idx}" title="${t('deleteTooltip')}">✕</button>
         </div>
       `;
       listEl.appendChild(row);
+    });
+    listEl.querySelectorAll('.edit-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const idx = Number(btn.getAttribute('data-idx'));
+        openEditModal(idx);
+      });
     });
     listEl.querySelectorAll('.del-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -157,6 +164,47 @@ document.getElementById('deleteConfirmBtn').addEventListener('click', async ()=>
   currentEntries.splice(pendingDeleteIdx, 1);
   await saveEntries(currentDate, currentEntries);
   closeDeleteModal();
+  renderDay();
+});
+
+let pendingEditIdx = null;
+
+// Open the edit popup for the meal at this index, pre-filled with its current values
+function openEditModal(idx){
+  pendingEditIdx = idx;
+  const entry = currentEntries[idx];
+  if(!entry) return;
+  document.getElementById('eName').value = entry.name || '';
+  document.getElementById('eKcal').value = entry.kcal || '';
+  document.getElementById('eProtein').value = entry.protein || '';
+  document.getElementById('eCarbs').value = entry.carbs || '';
+  document.getElementById('eFat').value = entry.fat || '';
+  document.getElementById('editModal').classList.remove('hidden');
+}
+
+function closeEditModal(){
+  pendingEditIdx = null;
+  document.getElementById('editModal').classList.add('hidden');
+}
+
+document.getElementById('editCancelBtn').addEventListener('click', closeEditModal);
+document.getElementById('editModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'editModal') closeEditModal();
+});
+document.getElementById('editSaveBtn').addEventListener('click', async ()=>{
+  if(pendingEditIdx === null) return;
+  const name = document.getElementById('eName').value.trim();
+  const kcal = document.getElementById('eKcal').value;
+  const protein = document.getElementById('eProtein').value;
+  const carbs = document.getElementById('eCarbs').value;
+  const fat = document.getElementById('eFat').value;
+  if(!name || !kcal){ return; }
+  currentEntries[pendingEditIdx] = {
+    name, kcal: Number(kcal)||0, protein: Number(protein)||0,
+    carbs: Number(carbs)||0, fat: Number(fat)||0
+  };
+  await saveEntries(currentDate, currentEntries);
+  closeEditModal();
   renderDay();
 });
 
