@@ -18,7 +18,7 @@
 
   <div class="topbar">
     <div class="brand">Fuel Log<small data-i18n="brandSub">Ernährungstracker</small></div>
-    <button class="lang-toggle" id="langToggle" title="Language / Sprache">🌐 <span id="langToggleLabel">EN</span></button>
+    <button class="settings-toggle" id="settingsToggle" title="Settings">⚙️</button>
   </div>
 
   <div class="datebar" id="datebar">
@@ -149,6 +149,85 @@
     <div class="modal-actions">
       <button class="modal-btn-cancel" id="editCancelBtn" data-i18n="cancel">Abbrechen</button>
       <button class="modal-btn-confirm modal-btn-save" id="editSaveBtn" data-i18n="save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="settingsModal">
+  <div class="modal-box settings-box">
+    <div class="modal-title" data-i18n="settingsTitle">Einstellungen</div>
+
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="languageLabel">Sprache</div>
+      <div class="lang-switch">
+        <button class="lang-opt" id="langDeBtn">Deutsch</button>
+        <button class="lang-opt" id="langEnBtn">English</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="targetsLabel">Tagesziele</div>
+      <div class="row macrow">
+        <div class="macrocell">
+          <label class="mini" data-i18n="miniKcal">Kcal</label>
+          <input type="number" id="tgKcal" min="0">
+        </div>
+        <div class="macrocell">
+          <label class="mini" data-i18n="miniProtein">Protein g</label>
+          <input type="number" id="tgProtein" min="0">
+        </div>
+        <div class="macrocell">
+          <label class="mini" data-i18n="miniCarbs">Carbs g</label>
+          <input type="number" id="tgCarbs" min="0">
+        </div>
+        <div class="macrocell">
+          <label class="mini" data-i18n="miniFat">Fett g</label>
+          <input type="number" id="tgFat" min="0">
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="calcLabel">Ziele berechnen</div>
+      <div class="row macrow">
+        <div class="macrocell">
+          <label class="mini" data-i18n="calcWeight">Gewicht kg</label>
+          <input type="number" id="calcWeight" min="0">
+        </div>
+        <div class="macrocell">
+          <label class="mini" data-i18n="calcHeight">Größe cm</label>
+          <input type="number" id="calcHeight" min="0">
+        </div>
+        <div class="macrocell">
+          <label class="mini" data-i18n="calcAge">Alter</label>
+          <input type="number" id="calcAge" min="0">
+        </div>
+        <div class="macrocell">
+          <label class="mini" data-i18n="calcGender">Geschlecht</label>
+          <select id="calcGender">
+            <option value="m" data-i18n="genderM">Männlich</option>
+            <option value="f" data-i18n="genderF">Weiblich</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="macrocell">
+          <label class="mini" data-i18n="calcActivity">Aktivität</label>
+          <select id="calcActivity">
+            <option value="1.2" data-i18n="actSedentary">Kaum aktiv</option>
+            <option value="1.375" data-i18n="actLight">Leicht aktiv</option>
+            <option value="1.55" selected data-i18n="actModerate">Mäßig aktiv</option>
+            <option value="1.725" data-i18n="actActive">Sehr aktiv</option>
+            <option value="1.9" data-i18n="actVeryActive">Extrem aktiv</option>
+          </select>
+        </div>
+      </div>
+      <button class="add-submit" id="calcApplyBtn" data-i18n="calcApply">Berechnen &amp; übernehmen</button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="settingsCloseBtn" data-i18n="close">Schließen</button>
+      <button class="modal-btn-confirm modal-btn-save" id="settingsSaveBtn" data-i18n="save">Speichern</button>
     </div>
   </div>
 </div>

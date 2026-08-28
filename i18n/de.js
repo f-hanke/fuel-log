@@ -14,4 +14,10 @@ const TRANSLATIONS_DE = {
   deleteTitle: 'Eintrag löschen?', no: 'Nein', yesDelete: 'Ja, löschen',
   meal: 'Mahlzeit', deleteTooltip: 'Löschen', loadingWeek: 'Lade Woche…',
   editTitle: 'Eintrag bearbeiten', editTooltip: 'Bearbeiten', save: 'Speichern', cancel: 'Abbrechen',
+  settingsTitle: 'Einstellungen', languageLabel: 'Sprache', targetsLabel: 'Tagesziele',
+  calcLabel: 'Ziele berechnen', calcWeight: 'Gewicht kg', calcHeight: 'Größe cm', calcAge: 'Alter',
+  calcGender: 'Geschlecht', genderM: 'Männlich', genderF: 'Weiblich', calcActivity: 'Aktivität',
+  actSedentary: 'Kaum aktiv', actLight: 'Leicht aktiv', actModerate: 'Mäßig aktiv',
+  actActive: 'Sehr aktiv', actVeryActive: 'Extrem aktiv',
+  calcApply: 'Berechnen & übernehmen', close: 'Schließen',
 };
