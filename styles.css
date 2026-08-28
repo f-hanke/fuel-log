@@ -23,7 +23,10 @@ body{
   font-family:var(--font-body);
   padding:0 0 60px 0;
 }
-.wrap{max-width:640px; margin:0 auto; padding:20px 16px;}
+/* Standalone PWA mode draws the app right under the phone's status bar (clock,
+   battery), so push the whole page down by the device's safe-area inset —
+   falls back to the normal 20px on browsers/devices without a notch */
+.wrap{max-width:640px; margin:0 auto; padding:max(20px, env(safe-area-inset-top)) 16px 20px;}
 
 .topbar{
   display:flex; align-items:baseline; justify-content:space-between;
