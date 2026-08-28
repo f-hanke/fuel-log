@@ -87,8 +87,9 @@
       <button class="add-submit" id="addBtn" data-i18n="addBtn">Hinzufügen</button>
     </div>
 
-    <div class="week-toggle">
-      <button id="toggleWeek" data-i18n="showWeek">Wochenübersicht anzeigen</button>
+    <div class="view-toggle">
+      <button id="toggleWeek" data-i18n="showWeek">Woche</button>
+      <button id="toggleMonth" data-i18n="showMonth">Monat</button>
     </div>
   </div>
 
@@ -105,7 +106,31 @@
     </div>
     <div id="weekList"></div>
     <div class="week-toggle">
+      <button id="toggleWeekToMonth" data-i18n="showMonth">Monat</button>
       <button id="toggleWeekBack" data-i18n="backToDay">Zurück zum Tag</button>
+    </div>
+  </div>
+
+  <div id="monthView" class="week-panel hidden">
+    <div class="datebar">
+      <button id="prevMonth">‹</button>
+      <div class="datelabel"><span id="monthRangeText">–</span></div>
+      <button id="nextMonth">›</button>
+    </div>
+    <div class="week-summary">
+      <div><div class="wsnum" id="msKcalAvg">0</div><div class="wslabel" data-i18n="wsKcalAvg">Ø kcal/Tag</div></div>
+      <div><div class="wsnum" id="msProteinAvg">0</div><div class="wslabel" data-i18n="wsProteinAvg">Ø Protein/Tag</div></div>
+      <div><div class="wsnum" id="msDaysLogged">0</div><div class="wslabel" data-i18n="wsDaysLogged">Tage geloggt</div></div>
+    </div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="monthModeList" data-i18n="monthModeList">Liste</button>
+      <button class="mode-btn" id="monthModeHeatmap" data-i18n="monthModeHeatmap">Heatmap</button>
+    </div>
+    <div id="monthList"></div>
+    <div id="monthHeatmap" class="hidden"></div>
+    <div class="week-toggle">
+      <button id="toggleMonthToWeek" data-i18n="showWeek">Woche</button>
+      <button id="toggleMonthBack" data-i18n="backToDay">Zurück zum Tag</button>
     </div>
   </div>
 
