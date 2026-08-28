@@ -452,7 +452,7 @@ async function renderWeek(){
 
 // 0 = the calendar month containing today, -1 = one month earlier, +1 = one month later, ...
 let monthOffset = 0;
-let monthMode = 'list'; // 'list' or 'heatmap'
+let monthMode = 'heatmap'; // 'list' or 'heatmap' — heatmap is the default view
 
 document.getElementById('prevMonth').addEventListener('click', async ()=>{
   monthOffset -= 1;
