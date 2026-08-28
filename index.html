@@ -7,11 +7,23 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Fuel Log">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0F1613">
+<meta name="theme-color" content="#0F1613" id="themeColorMeta">
 <title>Fuel Log</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="stylesheet" href="styles.css">
+<script>
+  // Applied inline (before styles.css paints) so a saved light-theme choice
+  // doesn't flash dark for a moment on load
+  (function(){
+    try{
+      if(localStorage.getItem('fuellog:theme') === 'light'){
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.getElementById('themeColorMeta').setAttribute('content', '#F4F6F2');
+      }
+    }catch(e){}
+  })();
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -187,6 +199,14 @@
       <div class="lang-switch">
         <button class="lang-opt" id="langDeBtn">Deutsch</button>
         <button class="lang-opt" id="langEnBtn">English</button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="themeLabel">Design</div>
+      <div class="lang-switch">
+        <button class="lang-opt" id="themeDarkBtn" data-i18n="themeDark">Dunkel</button>
+        <button class="lang-opt" id="themeLightBtn" data-i18n="themeLight">Hell</button>
       </div>
     </div>
 

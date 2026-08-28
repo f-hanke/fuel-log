@@ -17,6 +17,7 @@ const TRANSLATIONS_EN = {
   meal: 'Meal', deleteTooltip: 'Delete', loadingWeek: 'Loading week…',
   editTitle: 'Edit entry', editTooltip: 'Edit', save: 'Save', cancel: 'Cancel',
   settingsTitle: 'Settings', languageLabel: 'Language', targetsLabel: 'Daily targets',
+  themeLabel: 'Theme', themeDark: 'Dark', themeLight: 'Light',
   calcLabel: 'Calculate targets', calcWeight: 'Weight kg', calcHeight: 'Height cm', calcAge: 'Age',
   calcGender: 'Gender', genderM: 'Male', genderF: 'Female', calcActivity: 'Activity',
   actSedentary: 'Sedentary', actLight: 'Lightly active', actModerate: 'Moderately active',

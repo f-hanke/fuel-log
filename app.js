@@ -61,6 +61,25 @@ async function setLang(newLang){
 document.getElementById('langDeBtn').addEventListener('click', () => setLang('de'));
 document.getElementById('langEnBtn').addEventListener('click', () => setLang('en'));
 
+// Dark/light theme. The actual <html data-theme="..."> attribute is already set as
+// early as possible by the inline script in index.html (to avoid a flash of the
+// wrong theme); this just keeps our own state and the Settings buttons in sync.
+let theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+function setTheme(newTheme){
+  theme = newTheme;
+  try{ localStorage.setItem('fuellog:theme', theme); }catch(e){}
+  if(theme === 'light'){
+    document.documentElement.setAttribute('data-theme', 'light');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  document.getElementById('themeColorMeta').setAttribute('content', theme === 'light' ? '#F4F6F2' : '#0F1613');
+  document.getElementById('themeDarkBtn').classList.toggle('active', theme === 'dark');
+  document.getElementById('themeLightBtn').classList.toggle('active', theme === 'light');
+}
+document.getElementById('themeDarkBtn').addEventListener('click', () => setTheme('dark'));
+document.getElementById('themeLightBtn').addEventListener('click', () => setTheme('light'));
+
 // Remember the calculator's last inputs so the user doesn't have to retype them
 function loadCalcInputs(){
   try{
@@ -76,6 +95,8 @@ function saveCalcInputs(inputs){
 function openSettingsModal(){
   document.getElementById('langDeBtn').classList.toggle('active', lang === 'de');
   document.getElementById('langEnBtn').classList.toggle('active', lang === 'en');
+  document.getElementById('themeDarkBtn').classList.toggle('active', theme === 'dark');
+  document.getElementById('themeLightBtn').classList.toggle('active', theme === 'light');
 
   document.getElementById('tgKcal').value = TARGETS.kcal;
   document.getElementById('tgProtein').value = TARGETS.protein;

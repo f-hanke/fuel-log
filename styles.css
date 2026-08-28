@@ -13,6 +13,22 @@
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
   --font-body: 'Inter', -apple-system, sans-serif;
 }
+/* Light theme: overrides the same custom properties, toggled via Settings by
+   setting data-theme="light" on <html> (see the inline script in index.html
+   and setTheme() in app.js) */
+:root[data-theme="light"]{
+  --bg: #F4F6F2;
+  --bg-panel: #FFFFFF;
+  --bg-panel-2: #EAEFE7;
+  --line: #D9E0D5;
+  --ink: #16211C;
+  --ink-dim: #5E6D63;
+  --lime: #7CA82A;
+  --lime-dim: #5C7A1E;
+  --amber: #B8791E;
+  --red: #C94B37;
+}
+
 @font-face{
   font-family:'Bebas Neue';
   src: local('Arial Narrow Bold');
