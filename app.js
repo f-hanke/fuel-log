@@ -257,12 +257,27 @@ applyStaticTranslations();
 renderDay();
 
 if ("serviceWorker" in navigator) {
+  let swRegistration = null;
+
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").then((reg) => {
+      swRegistration = reg;
       // Force a fresh check for a newer sw.js every time the app is opened,
       // instead of waiting for the browser's own (slow/unreliable) update timer
       reg.update();
     }).catch(() => {});
+  });
+
+  // iOS home-screen apps are often just "resumed" from the background instead of
+  // getting a real page load (the load listener above never fires again), so also
+  // re-check for updates whenever the app becomes visible/foregrounded again
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && swRegistration) {
+      swRegistration.update();
+    }
+  });
+  window.addEventListener("pageshow", () => {
+    if (swRegistration) swRegistration.update();
   });
 
   // Once a new service worker takes control (new version activated),
