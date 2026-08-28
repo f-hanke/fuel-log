@@ -201,6 +201,7 @@ document.getElementById('toggleWeek').addEventListener('click', async ()=>{
   document.getElementById('dayView').classList.add('hidden');
   document.getElementById('datebar').classList.add('hidden');
   document.getElementById('weekView').classList.remove('hidden');
+  weekOffset = 0; // always open on the current week, not wherever we left off last time
   await renderWeek();
 });
 document.getElementById('toggleWeekBack').addEventListener('click', ()=>{
@@ -209,17 +210,32 @@ document.getElementById('toggleWeekBack').addEventListener('click', ()=>{
   document.getElementById('dayView').classList.remove('hidden');
 });
 
-// Week-view render: builds the Mon-Sun calendar week containing today, loads each
-// day's entries, shows the weekly kcal/protein average and a per-day kcal bar list
+// 0 = the calendar week containing today, -1 = one week earlier, +1 = one week later, ...
+let weekOffset = 0;
+document.getElementById('prevWeek').addEventListener('click', async ()=>{
+  weekOffset -= 1;
+  await renderWeek();
+});
+document.getElementById('nextWeek').addEventListener('click', async ()=>{
+  weekOffset += 1;
+  await renderWeek();
+});
+
+// Week-view render: builds the Mon-Sun calendar week for the current weekOffset,
+// loads each day's entries, shows the weekly kcal/protein average and a per-day kcal bar list
 async function renderWeek(){
   const listEl = document.getElementById('weekList');
   listEl.innerHTML = `<div class="loading">${t('loadingWeek')}</div>`;
 
-  // Find this week's Monday, regardless of which weekday "today" is
+  // Find that week's Monday, regardless of which weekday "today" is, then shift
+  // by weekOffset full weeks to navigate to earlier/later weeks
   const today = new Date();
   const dow = today.getDay(); // 0=So, 1=Mo, ... 6=Sa
   const diffToMonday = (dow === 0 ? -6 : 1 - dow);
-  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + diffToMonday);
+  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + diffToMonday + weekOffset*7);
+  const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6);
+  document.getElementById('weekRangeText').textContent =
+    `${monday.getDate()}.${monday.getMonth()+1}. – ${sunday.getDate()}.${sunday.getMonth()+1}.`;
 
   const days = [];
   for(let i=0; i<7; i++){
