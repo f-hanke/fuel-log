@@ -87,7 +87,6 @@ async function renderWeek(){
 
 // 0 = the calendar month containing today, -1 = one month earlier, +1 = one month later, ...
 let monthOffset = 0;
-let monthMode = 'heatmap'; // 'list' or 'heatmap' — heatmap is the default view
 
 document.getElementById('prevMonth').addEventListener('click', async ()=>{
   monthOffset -= 1;
@@ -96,21 +95,6 @@ document.getElementById('prevMonth').addEventListener('click', async ()=>{
 document.getElementById('nextMonth').addEventListener('click', async ()=>{
   monthOffset += 1;
   await renderMonth();
-});
-
-document.getElementById('monthModeList').addEventListener('click', ()=>{
-  monthMode = 'list';
-  document.getElementById('monthModeList').classList.add('active');
-  document.getElementById('monthModeHeatmap').classList.remove('active');
-  document.getElementById('monthList').classList.remove('hidden');
-  document.getElementById('monthHeatmap').classList.add('hidden');
-});
-document.getElementById('monthModeHeatmap').addEventListener('click', ()=>{
-  monthMode = 'heatmap';
-  document.getElementById('monthModeHeatmap').classList.add('active');
-  document.getElementById('monthModeList').classList.remove('active');
-  document.getElementById('monthHeatmap').classList.remove('hidden');
-  document.getElementById('monthList').classList.add('hidden');
 });
 
 // How "on target" a day was, bucketed into a heatmap color class
@@ -123,12 +107,10 @@ function heatClass(logged, kcalPct){
 }
 
 // Month-view render: builds every day of the current monthOffset's calendar month,
-// shows the monthly kcal/protein average, and renders both the list and the heatmap
-// (only one is visible at a time, toggled via monthMode)
+// shows the monthly kcal/protein average, and renders the heatmap
 async function renderMonth(){
-  const listEl = document.getElementById('monthList');
   const heatEl = document.getElementById('monthHeatmap');
-  listEl.innerHTML = `<div class="loading">${t('loadingMonth')}</div>`;
+  heatEl.innerHTML = `<div class="loading">${t('loadingMonth')}</div>`;
 
   const base = new Date();
   const first = new Date(base.getFullYear(), base.getMonth() + monthOffset, 1);
@@ -156,21 +138,7 @@ async function renderMonth(){
   document.getElementById('msProteinAvg').textContent = avgProtein + 'g';
   document.getElementById('msDaysLogged').textContent = loggedDays.length + '/' + daysInMonth;
 
-  // List mode: one row per day, same look as the week list
-  listEl.innerHTML = '';
-  results.forEach(r=>{
-    const row = document.createElement('div');
-    row.className = 'week-day' + (isSameDay(r.date, new Date()) ? ' is-today' : '');
-    row.innerHTML = `
-      <div class="wd-label">${t('dow')[r.date.getDay()]}<span class="wd-date">${r.date.getDate()}.${r.date.getMonth()+1}.</span></div>
-      <div class="wd-bar-track"><div class="wd-bar-fill" style="width:${pct(r.totals.kcal, TARGETS.kcal)}%"></div></div>
-      <div class="wd-kcal">${r.logged ? Math.round(r.totals.kcal) : '–'}</div>
-    `;
-    row.addEventListener('click', () => jumpToDay(r.date));
-    listEl.appendChild(row);
-  });
-
-  // Heatmap mode: a Mon-Sun calendar grid, cell color = how close that day was to target
+  // A Mon-Sun calendar grid, cell color = how close that day was to target
   heatEl.innerHTML = '';
   const grid = document.createElement('div');
   grid.className = 'heatmap-grid';

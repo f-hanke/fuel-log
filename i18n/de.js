@@ -11,7 +11,7 @@ const TRANSLATIONS_DE = {
   addBtn: 'Hinzufügen', showWeek: 'Woche', showMonth: 'Monat',
   wsKcalAvg: 'Ø kcal/Tag', wsProteinAvg: 'Ø Protein/Tag', wsDaysLogged: 'Tage geloggt',
   backToDay: 'Zurück zum Tag',
-  monthModeList: 'Liste', monthModeHeatmap: 'Heatmap', loadingMonth: 'Lade Monat…',
+  loadingMonth: 'Lade Monat…',
   legendNone: 'Nicht geloggt', legendUnder: 'Unter Ziel', legendOnTarget: 'Im Ziel', legendOver: 'Über Ziel',
   deleteTitle: 'Eintrag löschen?', no: 'Nein', yesDelete: 'Ja, löschen',
   meal: 'Mahlzeit', deleteTooltip: 'Löschen', loadingWeek: 'Lade Woche…',

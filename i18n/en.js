@@ -11,7 +11,7 @@ const TRANSLATIONS_EN = {
   addBtn: 'Add', showWeek: 'Week', showMonth: 'Month',
   wsKcalAvg: 'Avg kcal/day', wsProteinAvg: 'Avg protein/day', wsDaysLogged: 'Days logged',
   backToDay: 'Back to day',
-  monthModeList: 'List', monthModeHeatmap: 'Heatmap', loadingMonth: 'Loading month…',
+  loadingMonth: 'Loading month…',
   legendNone: 'Not logged', legendUnder: 'Under target', legendOnTarget: 'On target', legendOver: 'Over target',
   deleteTitle: 'Delete entry?', no: 'No', yesDelete: 'Yes, delete',
   meal: 'Meal', deleteTooltip: 'Delete', loadingWeek: 'Loading week…',

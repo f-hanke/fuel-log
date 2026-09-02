@@ -83,8 +83,8 @@ body{
   display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;
 }
 .stat{
-  position:relative; background:var(--bg-panel); border-radius:10px;
-  padding:14px 8px; text-align:center; overflow:hidden;
+  position:relative; min-width:0; background:var(--bg-panel); border-radius:10px;
+  padding:14px 6px; text-align:center; overflow:hidden;
 }
 /* The rounded-rect progress outline: same idea as a circular progress ring,
    just traced around the tile's own border instead of a circle. ring-track is
@@ -102,11 +102,12 @@ body{
 
 .stat .num, .stat .label{position:relative; z-index:1;}
 .stat .num{
-  font-family:var(--font-display); font-weight:800; font-size:19px; line-height:1;
+  font-family:var(--font-display); font-weight:800; font-size:16px; line-height:1.15;
+  letter-spacing:-0.2px; overflow-wrap:anywhere; word-break:break-word;
 }
 .stat .label{
-  font-family:var(--font-body); font-weight:600; font-size:11px; color:var(--ink-dim);
-  text-transform:uppercase; letter-spacing:0.5px; margin-top:6px;
+  font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim);
+  text-transform:uppercase; letter-spacing:0.3px; margin-top:6px;
 }
 .stat.kcal .num{color:var(--lime);}
 .stat.protein .num{color:var(--amber);}
@@ -181,16 +182,6 @@ body{
   padding:9px 18px; border-radius:20px; cursor:pointer;
 }
 .week-toggle button:hover, .view-toggle button:hover{border-color:var(--lime); color:var(--lime);}
-
-.mode-toggle{
-  display:flex; gap:8px; margin:14px 0;
-}
-.mode-btn{
-  flex:1; background:var(--bg-panel); border:1px solid var(--line); color:var(--ink-dim);
-  font-family:var(--font-body); font-weight:600; font-size:12.5px; letter-spacing:0.2px; text-transform:uppercase;
-  padding:9px; border-radius:8px; cursor:pointer;
-}
-.mode-btn.active{border-color:var(--lime); color:var(--lime); background:var(--bg-panel-2);}
 
 .heatmap-grid{
   display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:4px;
