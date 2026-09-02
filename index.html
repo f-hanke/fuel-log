@@ -47,28 +47,36 @@
   <div id="dayView">
     <div class="ring-row">
       <div class="stat kcal">
-        <div class="num" id="statKcal">0</div>
+        <svg class="stat-ring" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path class="ring-track" d="M12,2 H88 A10,10 0 0 1 98,12 V88 A10,10 0 0 1 88,98 H12 A10,10 0 0 1 2,88 V12 A10,10 0 0 1 12,2 Z"/>
+          <path class="ring-fill" id="ringKcal" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" d="M12,2 H88 A10,10 0 0 1 98,12 V88 A10,10 0 0 1 88,98 H12 A10,10 0 0 1 2,88 V12 A10,10 0 0 1 12,2 Z"/>
+        </svg>
+        <div class="num" id="statKcal">0/3200</div>
         <div class="label" data-i18n="labelKcal">kcal</div>
-        <div class="sub" id="statKcalSub">von 3200</div>
-        <div class="bar-track"><div class="bar-fill" id="barKcal" style="width:0%"></div></div>
       </div>
       <div class="stat protein">
-        <div class="num" id="statProtein">0</div>
-        <div class="label" data-i18n="labelProtein">Protein g</div>
-        <div class="sub" id="statProteinSub">von 130</div>
-        <div class="bar-track protein"><div class="bar-fill" id="barProtein" style="width:0%"></div></div>
+        <svg class="stat-ring" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path class="ring-track" d="M12,2 H88 A10,10 0 0 1 98,12 V88 A10,10 0 0 1 88,98 H12 A10,10 0 0 1 2,88 V12 A10,10 0 0 1 12,2 Z"/>
+          <path class="ring-fill" id="ringProtein" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" d="M12,2 H88 A10,10 0 0 1 98,12 V88 A10,10 0 0 1 88,98 H12 A10,10 0 0 1 2,88 V12 A10,10 0 0 1 12,2 Z"/>
+        </svg>
+        <div class="num" id="statProtein">0/130</div>
+        <div class="label" data-i18n="labelProtein">Protein</div>
       </div>
       <div class="stat carbs">
-        <div class="num" id="statCarbs">0</div>
-        <div class="label" data-i18n="labelCarbs">Carbs g</div>
-        <div class="sub" id="statCarbsSub">von 460</div>
-        <div class="bar-track carbs"><div class="bar-fill" id="barCarbs" style="width:0%"></div></div>
+        <svg class="stat-ring" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path class="ring-track" d="M12,2 H88 A10,10 0 0 1 98,12 V88 A10,10 0 0 1 88,98 H12 A10,10 0 0 1 2,88 V12 A10,10 0 0 1 12,2 Z"/>
+          <path class="ring-fill" id="ringCarbs" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" d="M12,2 H88 A10,10 0 0 1 98,12 V88 A10,10 0 0 1 88,98 H12 A10,10 0 0 1 2,88 V12 A10,10 0 0 1 12,2 Z"/>
+        </svg>
+        <div class="num" id="statCarbs">0/460</div>
+        <div class="label" data-i18n="labelCarbs">Carbs</div>
       </div>
       <div class="stat fat">
-        <div class="num" id="statFat">0</div>
-        <div class="label" data-i18n="labelFat">Fett g</div>
-        <div class="sub" id="statFatSub">von 90</div>
-        <div class="bar-track fat"><div class="bar-fill" id="barFat" style="width:0%"></div></div>
+        <svg class="stat-ring" viewBox="0 0 100 100" preserveAspectRatio="none">
+          <path class="ring-track" d="M12,2 H88 A10,10 0 0 1 98,12 V88 A10,10 0 0 1 88,98 H12 A10,10 0 0 1 2,88 V12 A10,10 0 0 1 12,2 Z"/>
+          <path class="ring-fill" id="ringFat" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" d="M12,2 H88 A10,10 0 0 1 98,12 V88 A10,10 0 0 1 88,98 H12 A10,10 0 0 1 2,88 V12 A10,10 0 0 1 12,2 Z"/>
+        </svg>
+        <div class="num" id="statFat">0/90</div>
+        <div class="label" data-i18n="labelFat">Fett</div>
       </div>
     </div>
 

@@ -83,32 +83,35 @@ body{
   display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;
 }
 .stat{
-  background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
-  padding:12px 8px; text-align:center;
+  position:relative; background:var(--bg-panel); border-radius:10px;
+  padding:14px 8px; text-align:center; overflow:hidden;
 }
+/* The rounded-rect progress outline: same idea as a circular progress ring,
+   just traced around the tile's own border instead of a circle. ring-track is
+   the always-visible dim base outline; ring-fill is drawn on top and reveals
+   itself clockwise via stroke-dashoffset (pathLength="100" lets us treat that
+   as a plain 0-100 percentage, regardless of the path's real length). */
+.stat-ring{position:absolute; inset:0; width:100%; height:100%;}
+.stat-ring path{fill:none; stroke-width:3;}
+.ring-track{stroke:var(--line);}
+.ring-fill{stroke-linecap:round; transition:stroke-dashoffset 0.4s ease;}
+.stat.kcal .ring-fill{stroke:var(--lime);}
+.stat.protein .ring-fill{stroke:var(--amber);}
+.stat.carbs .ring-fill{stroke:#5FB7E8;}
+.stat.fat .ring-fill{stroke:var(--red);}
+
+.stat .num, .stat .label{position:relative; z-index:1;}
 .stat .num{
-  font-family:var(--font-display); font-weight:800; font-size:23px; line-height:1;
+  font-family:var(--font-display); font-weight:800; font-size:19px; line-height:1;
 }
 .stat .label{
   font-family:var(--font-body); font-weight:600; font-size:11px; color:var(--ink-dim);
-  text-transform:uppercase; letter-spacing:0.5px; margin-top:5px;
-}
-.stat .sub{
-  font-family:var(--font-mono); font-weight:500; font-size:11px; color:var(--ink-dim); margin-top:3px;
+  text-transform:uppercase; letter-spacing:0.5px; margin-top:6px;
 }
 .stat.kcal .num{color:var(--lime);}
 .stat.protein .num{color:var(--amber);}
 .stat.carbs .num{color:#5FB7E8;}
 .stat.fat .num{color:var(--red);}
-
-.bar-track{
-  height:5px; background:var(--bg-panel-2); border-radius:3px; margin-top:8px; overflow:hidden;
-}
-.bar-fill{height:100%; border-radius:3px;}
-.kcal .bar-fill{background:var(--lime);}
-.protein .bar-fill{background:var(--amber);}
-.carbs .bar-fill{background:#5FB7E8;}
-.fat .bar-fill{background:var(--red);}
 
 .section-title{
   font-family:var(--font-body); font-weight:700; font-size:13px; letter-spacing:0.3px;

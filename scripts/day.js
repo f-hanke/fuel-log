@@ -4,6 +4,12 @@
 let currentDate = new Date();
 let currentEntries = [];
 
+// Fills one stat tile's "current/target" text and its rounded-rect ring outline
+function setStatTile(numId, ringId, value, target){
+  document.getElementById(numId).textContent = `${Math.round(value)}/${target}`;
+  document.getElementById(ringId).style.strokeDashoffset = 100 - pct(value, target);
+}
+
 // Main day-view render: loads the day's entries, updates the macro stat tiles/bars
 // and rebuilds the meal list. Called on load, day navigation, add, and delete.
 async function renderDay(){
@@ -13,21 +19,13 @@ async function renderDay(){
   currentEntries = await loadEntries(currentDate);
   const totals = sumEntries(currentEntries);
 
-  document.getElementById('statKcal').textContent = Math.round(totals.kcal);
-  document.getElementById('statKcalSub').textContent = `${t('of')} ${TARGETS.kcal}`;
-  document.getElementById('barKcal').style.width = pct(totals.kcal, TARGETS.kcal) + '%';
-
-  document.getElementById('statProtein').textContent = Math.round(totals.protein);
-  document.getElementById('statProteinSub').textContent = `${t('of')} ${TARGETS.protein}`;
-  document.getElementById('barProtein').style.width = pct(totals.protein, TARGETS.protein) + '%';
-
-  document.getElementById('statCarbs').textContent = Math.round(totals.carbs);
-  document.getElementById('statCarbsSub').textContent = `${t('of')} ${TARGETS.carbs}`;
-  document.getElementById('barCarbs').style.width = pct(totals.carbs, TARGETS.carbs) + '%';
-
-  document.getElementById('statFat').textContent = Math.round(totals.fat);
-  document.getElementById('statFatSub').textContent = `${t('of')} ${TARGETS.fat}`;
-  document.getElementById('barFat').style.width = pct(totals.fat, TARGETS.fat) + '%';
+  // Each stat tile shows "current/target" as its main number, and its rounded-rect
+  // outline (the SVG ring-fill path) fills clockwise from 0-100% via stroke-dashoffset
+  // — pathLength="100" on the path means dashoffset can be set directly as a percentage.
+  setStatTile('statKcal', 'ringKcal', totals.kcal, TARGETS.kcal);
+  setStatTile('statProtein', 'ringProtein', totals.protein, TARGETS.protein);
+  setStatTile('statCarbs', 'ringCarbs', totals.carbs, TARGETS.carbs);
+  setStatTile('statFat', 'ringFat', totals.fat, TARGETS.fat);
 
   const listEl = document.getElementById('mealList');
   listEl.innerHTML = '';
