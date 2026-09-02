@@ -9,9 +9,9 @@
   --lime-dim: #7C9A2C;
   --amber: #F2A93B;
   --red: #E8654F;
-  --font-display: 'Bebas Neue', 'Arial Narrow', sans-serif;
+  --font-display: 'Manrope', -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Consolas, monospace;
-  --font-body: 'Inter', -apple-system, sans-serif;
+  --font-body: 'Inter', -apple-system, 'Segoe UI', sans-serif;
 }
 /* Light theme: overrides the same custom properties, toggled via Settings by
    setting data-theme="light" on <html> (see the inline script in index.html
@@ -29,15 +29,12 @@
   --red: #C94B37;
 }
 
-@font-face{
-  font-family:'Bebas Neue';
-  src: local('Arial Narrow Bold');
-}
 *{box-sizing:border-box;}
 body{
   margin:0; background:var(--bg); color:var(--ink);
   font-family:var(--font-body);
   padding:0 0 60px 0;
+  -webkit-font-smoothing:antialiased;
 }
 /* Standalone PWA mode draws the app right under the phone's status bar (clock,
    battery), so push the whole page down by the device's safe-area inset —
@@ -49,12 +46,12 @@ body{
   margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--line);
 }
 .brand{
-  font-family:var(--font-display); font-size:34px; letter-spacing:1px;
-  text-transform:uppercase; color:var(--lime); line-height:1;
+  font-family:var(--font-display); font-weight:800; font-size:28px; letter-spacing:0.2px;
+  color:var(--lime); line-height:1;
 }
 .brand small{
-  display:block; font-family:var(--font-mono); font-size:10px;
-  letter-spacing:2px; color:var(--ink-dim); text-transform:uppercase; margin-top:4px;
+  display:block; font-family:var(--font-mono); font-weight:500; font-size:11px;
+  letter-spacing:1px; color:var(--ink-dim); text-transform:uppercase; margin-top:5px;
 }
 
 .settings-toggle{
@@ -75,10 +72,11 @@ body{
 }
 .datebar button:hover{ color:var(--lime); background:var(--bg-panel-2); }
 .datebar .datelabel{
-  font-family:var(--font-mono); font-size:13px; letter-spacing:0.5px; text-align:center;
+  font-family:var(--font-body); font-weight:600; font-size:14px; letter-spacing:0.2px; text-align:center;
 }
 .datebar .datelabel .today-tag{
-  color:var(--lime); font-size:10px; letter-spacing:1.5px; display:block; margin-top:2px;
+  color:var(--lime); font-family:var(--font-mono); font-weight:600; font-size:10px;
+  letter-spacing:1px; display:block; margin-top:3px;
 }
 
 .ring-row{
@@ -89,14 +87,14 @@ body{
   padding:12px 8px; text-align:center;
 }
 .stat .num{
-  font-family:var(--font-display); font-size:26px; letter-spacing:0.5px; line-height:1;
+  font-family:var(--font-display); font-weight:800; font-size:23px; line-height:1;
 }
 .stat .label{
-  font-family:var(--font-mono); font-size:9px; color:var(--ink-dim);
-  text-transform:uppercase; letter-spacing:1.5px; margin-top:4px;
+  font-family:var(--font-body); font-weight:600; font-size:11px; color:var(--ink-dim);
+  text-transform:uppercase; letter-spacing:0.5px; margin-top:5px;
 }
 .stat .sub{
-  font-family:var(--font-mono); font-size:10px; color:var(--ink-dim); margin-top:2px;
+  font-family:var(--font-mono); font-weight:500; font-size:11px; color:var(--ink-dim); margin-top:3px;
 }
 .stat.kcal .num{color:var(--lime);}
 .stat.protein .num{color:var(--amber);}
@@ -113,7 +111,7 @@ body{
 .fat .bar-fill{background:var(--red);}
 
 .section-title{
-  font-family:var(--font-mono); font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  font-family:var(--font-body); font-weight:700; font-size:13px; letter-spacing:0.3px;
   color:var(--ink-dim); margin:22px 0 10px 2px;
 }
 
@@ -122,11 +120,11 @@ body{
   background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
   padding:12px 14px; margin-bottom:8px;
 }
-.meal .name{font-size:14px; font-weight:600;}
+.meal .name{font-size:15px; font-weight:600;}
 .meal .macros{
-  font-family:var(--font-mono); font-size:11px; color:var(--ink-dim); margin-top:3px;
+  font-family:var(--font-mono); font-weight:500; font-size:12px; color:var(--ink-dim); margin-top:4px;
 }
-.meal .kcalval{font-family:var(--font-mono); font-size:16px; color:var(--lime); margin-right:10px;}
+.meal .kcalval{font-family:var(--font-mono); font-weight:600; font-size:16px; color:var(--lime); margin-right:10px;}
 .meal-right{display:flex; align-items:center;}
 .del-btn{
   background:none; border:none; color:var(--ink-dim); cursor:pointer; font-size:16px;
@@ -140,7 +138,7 @@ body{
 .edit-btn:hover{color:var(--lime); background:var(--bg-panel-2);}
 
 .empty{
-  color:var(--ink-dim); font-size:13px; text-align:center; padding:24px 10px;
+  color:var(--ink-dim); font-size:14px; text-align:center; padding:24px 10px;
   border:1px dashed var(--line); border-radius:10px;
 }
 
@@ -151,7 +149,7 @@ body{
 .addform .row{display:flex; gap:8px; margin-bottom:8px;}
 .addform input{
   background:var(--bg-panel-2); border:1px solid var(--line); border-radius:7px;
-  color:var(--ink); padding:9px 10px; font-family:var(--font-body); font-size:13px;
+  color:var(--ink); padding:9px 10px; font-family:var(--font-body); font-size:14px;
   width:100%; outline:none;
 }
 .addform input:focus{border-color:var(--lime);}
@@ -159,14 +157,14 @@ body{
 .addform .macrow input{flex:1; min-width:0;}
 .addform .macrow{margin-bottom:10px;}
 .addform label.mini{
-  font-family:var(--font-mono); font-size:9px; color:var(--ink-dim);
-  text-transform:uppercase; display:block; margin-bottom:3px; letter-spacing:1px;
+  font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim);
+  text-transform:uppercase; display:block; margin-bottom:4px; letter-spacing:0.4px;
 }
 .macrocell{flex:1;}
 .add-submit{
   width:100%; background:var(--lime); color:#0F1613; border:none; border-radius:8px;
-  padding:11px; font-family:var(--font-mono); font-weight:700; font-size:12px;
-  letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; margin-top:2px;
+  padding:11px; font-family:var(--font-body); font-weight:700; font-size:13px;
+  letter-spacing:0.4px; text-transform:uppercase; cursor:pointer; margin-top:2px;
 }
 .add-submit:hover{background:#D9FF55;}
 .add-submit:disabled{opacity:0.4; cursor:default;}
@@ -176,7 +174,7 @@ body{
 }
 .week-toggle button, .view-toggle button{
   background:none; border:1px solid var(--line); color:var(--ink-dim);
-  font-family:var(--font-mono); font-size:11px; letter-spacing:1.5px; text-transform:uppercase;
+  font-family:var(--font-body); font-weight:600; font-size:12.5px; letter-spacing:0.3px; text-transform:uppercase;
   padding:9px 18px; border-radius:20px; cursor:pointer;
 }
 .week-toggle button:hover, .view-toggle button:hover{border-color:var(--lime); color:var(--lime);}
@@ -186,7 +184,7 @@ body{
 }
 .mode-btn{
   flex:1; background:var(--bg-panel); border:1px solid var(--line); color:var(--ink-dim);
-  font-family:var(--font-mono); font-size:11px; letter-spacing:1px; text-transform:uppercase;
+  font-family:var(--font-body); font-weight:600; font-size:12.5px; letter-spacing:0.2px; text-transform:uppercase;
   padding:9px; border-radius:8px; cursor:pointer;
 }
 .mode-btn.active{border-color:var(--lime); color:var(--lime); background:var(--bg-panel-2);}
@@ -195,13 +193,13 @@ body{
   display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:4px;
 }
 .heatmap-dow{
-  font-family:var(--font-mono); font-size:9px; color:var(--ink-dim); text-align:center;
+  font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim); text-align:center;
   text-transform:uppercase; padding-bottom:4px;
 }
 .heatmap-cell{
   aspect-ratio:1; border-radius:6px; border:1px solid var(--line);
   display:flex; align-items:center; justify-content:center;
-  font-family:var(--font-mono); font-size:10px; color:var(--ink-dim); cursor:pointer;
+  font-family:var(--font-mono); font-weight:500; font-size:11px; color:var(--ink-dim); cursor:pointer;
 }
 .heatmap-cell.hm-blank{visibility:hidden; cursor:default;}
 .heatmap-cell.hm-empty{background:var(--bg-panel);}
@@ -213,7 +211,7 @@ body{
 
 .heatmap-legend{
   display:flex; align-items:center; justify-content:center; gap:6px; margin-top:12px;
-  font-family:var(--font-mono); font-size:9px; color:var(--ink-dim); text-transform:uppercase;
+  font-family:var(--font-body); font-weight:500; font-size:10.5px; color:var(--ink-dim); text-transform:uppercase;
 }
 .heatmap-legend .sw{width:12px; height:12px; border-radius:3px; display:inline-block;}
 
@@ -223,11 +221,11 @@ body{
   padding:10px 4px; border-bottom:1px solid var(--line); cursor:pointer;
 }
 .week-day:hover{background:var(--bg-panel);}
-.week-day .wd-label{font-family:var(--font-mono); font-size:12px; color:var(--ink-dim);}
-.week-day .wd-label .wd-date{display:block; font-size:9px; opacity:0.7;}
+.week-day .wd-label{font-family:var(--font-body); font-weight:600; font-size:13px; color:var(--ink-dim);}
+.week-day .wd-label .wd-date{display:block; font-size:10.5px; opacity:0.75; font-weight:500;}
 .week-day .wd-bar-track{height:6px; background:var(--bg-panel-2); border-radius:3px; overflow:hidden;}
 .week-day .wd-bar-fill{height:100%; background:var(--lime); border-radius:3px;}
-.week-day .wd-kcal{font-family:var(--font-mono); font-size:12px; text-align:right;}
+.week-day .wd-kcal{font-family:var(--font-mono); font-weight:600; font-size:13px; text-align:right;}
 .week-day.is-today .wd-label{color:var(--lime);}
 
 .week-summary{
@@ -235,10 +233,10 @@ body{
   border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:10px;
 }
 .week-summary div{text-align:center; flex:1;}
-.week-summary .wsnum{font-family:var(--font-display); font-size:22px; color:var(--lime);}
-.week-summary .wslabel{font-family:var(--font-mono); font-size:9px; color:var(--ink-dim); letter-spacing:1px; text-transform:uppercase; margin-top:2px;}
+.week-summary .wsnum{font-family:var(--font-display); font-weight:800; font-size:20px; color:var(--lime);}
+.week-summary .wslabel{font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim); letter-spacing:0.3px; text-transform:uppercase; margin-top:3px;}
 
-.loading{text-align:center; color:var(--ink-dim); padding:30px; font-family:var(--font-mono); font-size:12px;}
+.loading{text-align:center; color:var(--ink-dim); padding:30px; font-family:var(--font-body); font-weight:500; font-size:13px;}
 .hidden{display:none !important;}
 
 .modal-overlay{
@@ -250,27 +248,27 @@ body{
   background:var(--bg-panel); border:1px solid var(--line); border-radius:12px;
   padding:20px; max-width:340px; width:100%;
 }
-.modal-box .modal-title{font-size:15px; font-weight:600; margin-bottom:4px;}
+.modal-box .modal-title{font-size:16px; font-weight:700; margin-bottom:4px;}
 .modal-box .modal-text{
-  font-family:var(--font-mono); font-size:12px; color:var(--ink-dim); margin-bottom:18px;
+  font-family:var(--font-body); font-weight:500; font-size:13px; color:var(--ink-dim); margin-bottom:18px;
 }
 /* Form fields inside the edit modal (mirrors .addform's input styling) */
 .modal-box .row{display:flex; gap:8px; margin:14px 0 8px;}
 .modal-box .macrow{margin-bottom:14px;}
 .modal-box input{
   background:var(--bg-panel-2); border:1px solid var(--line); border-radius:7px;
-  color:var(--ink); padding:9px 10px; font-family:var(--font-body); font-size:13px;
+  color:var(--ink); padding:9px 10px; font-family:var(--font-body); font-size:14px;
   width:100%; outline:none;
 }
 .modal-box input:focus{border-color:var(--lime);}
 .modal-box input.name-input{flex:2;}
 .modal-box label.mini{
-  font-family:var(--font-mono); font-size:9px; color:var(--ink-dim);
-  text-transform:uppercase; display:block; margin-bottom:3px; letter-spacing:1px;
+  font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim);
+  text-transform:uppercase; display:block; margin-bottom:4px; letter-spacing:0.4px;
 }
 .modal-box select{
   background:var(--bg-panel-2); border:1px solid var(--line); border-radius:7px;
-  color:var(--ink); padding:9px 8px; font-family:var(--font-body); font-size:12px;
+  color:var(--ink); padding:9px 8px; font-family:var(--font-body); font-size:13px;
   width:100%; outline:none;
 }
 .modal-box select:focus{border-color:var(--lime);}
@@ -279,20 +277,20 @@ body{
 .settings-section{margin-bottom:20px;}
 .settings-section:last-of-type{margin-bottom:0;}
 .settings-label{
-  font-family:var(--font-mono); font-size:11px; letter-spacing:1.5px; text-transform:uppercase;
+  font-family:var(--font-body); font-weight:700; font-size:12.5px; letter-spacing:0.3px; text-transform:uppercase;
   color:var(--ink-dim); margin-bottom:8px;
 }
 .lang-switch{display:flex; gap:8px;}
 .lang-opt{
   flex:1; background:var(--bg-panel-2); border:1px solid var(--line); color:var(--ink-dim);
-  padding:9px; border-radius:7px; font-family:var(--font-body); font-size:13px; cursor:pointer;
+  padding:9px; border-radius:7px; font-family:var(--font-body); font-weight:500; font-size:14px; cursor:pointer;
 }
 .lang-opt.active{border-color:var(--lime); color:var(--lime);}
 #calcApplyBtn{margin-top:4px;}
 .modal-actions{display:flex; gap:10px;}
 .modal-actions button{
-  flex:1; border-radius:8px; padding:11px; font-family:var(--font-mono);
-  font-weight:700; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+  flex:1; border-radius:8px; padding:11px; font-family:var(--font-body);
+  font-weight:700; font-size:13px; letter-spacing:0.3px; text-transform:uppercase;
   cursor:pointer; border:1px solid var(--line);
 }
 .modal-btn-cancel{background:var(--bg-panel-2); color:var(--ink);}
