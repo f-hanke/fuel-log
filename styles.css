@@ -155,7 +155,11 @@ body{
 .stat .num, .stat .label{position:relative; z-index:1;}
 .stat .num{
   font-family:var(--font-display); font-weight:800; font-size:16px; line-height:1.15;
-  letter-spacing:-0.2px; overflow-wrap:anywhere; word-break:break-word;
+  letter-spacing:-0.2px; overflow-wrap:normal;
+  /* Plain "/" is already a valid break point on its own — break-word was
+     forcing an ugly mid-number split (e.g. "320/320" then a lone "0") even
+     when the text actually fit on one line without it. .stat's own
+     overflow:hidden is the real safety net for any truly extreme values. */
 }
 .stat .label{
   font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim);
@@ -261,6 +265,7 @@ input.name-input{flex:2;}
 label.mini{
   font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim);
   text-transform:uppercase; display:block; margin-bottom:4px; letter-spacing:0.4px;
+  line-height:1.2; min-height:2.4em;
 }
 #addView .search-go{width:auto; flex:0 0 auto; padding:9px 16px; margin-top:0;}
 .search-hint{
@@ -308,6 +313,7 @@ label.mini{
   flex:1; min-width:0; background:var(--bg-panel); border:1px solid var(--line); color:var(--ink-dim);
   font-family:var(--font-body); font-weight:600; font-size:10.5px; letter-spacing:0; text-transform:uppercase;
   padding:9px 2px; border-radius:8px; cursor:pointer; line-height:1.2;
+  overflow-wrap:break-word; hyphens:auto; text-align:center;
 }
 .mode-btn.active{border-color:var(--lime); color:var(--lime); background:var(--bg-panel-2);}
 
@@ -353,6 +359,7 @@ label.mini{
   padding:14px; margin-bottom:14px;
 }
 .weight-chart{width:100%; height:auto; display:block;}
+.weight-grid-line{stroke:var(--line); stroke-width:1;}
 .weight-line{fill:none; stroke:var(--lime); stroke-width:2; stroke-linejoin:round; stroke-linecap:round;}
 .weight-dot{fill:var(--bg-panel); stroke:var(--lime); stroke-width:1.5;}
 .weight-dot-last{fill:var(--lime); stroke:none;}

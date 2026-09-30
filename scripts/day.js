@@ -152,9 +152,10 @@ async function renderDay(){
 function renderMealGroup(category, entries){
   const suffix = MEAL_CATEGORIES[category];
   const kcalTotal = entries.reduce((s, e) => s + (Number(e.kcal) || 0), 0);
-  document.getElementById('catKcal' + suffix).textContent = Math.round(kcalTotal) + ' kcal';
-
   const mealTarget = TARGETS.kcal * MEAL_KCAL_SHARE[category];
+  document.getElementById('catKcal' + suffix).textContent =
+    `${Math.round(kcalTotal)}/${Math.round(mealTarget)} kcal`;
+
   const ring = document.getElementById('catRing' + suffix);
   ring.style.strokeDasharray = CAT_RING_CIRCUMFERENCE;
   ring.style.strokeDashoffset = CAT_RING_CIRCUMFERENCE * (1 - pct(kcalTotal, mealTarget) / 100);

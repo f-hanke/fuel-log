@@ -364,11 +364,13 @@
 <div class="modal-overlay hidden" id="weightModal">
   <div class="modal-box">
     <div class="modal-title" data-i18n="weightTitle">Gewicht</div>
-    <div class="row macrow">
+    <div class="row">
       <div class="macrocell">
         <label class="mini" data-i18n="weightDateLabel">Datum</label>
         <input type="date" id="wmDate">
       </div>
+    </div>
+    <div class="row">
       <div class="macrocell">
         <label class="mini" data-i18n="weightLabel">Gewicht (kg)</label>
         <input type="number" id="wmWeight" step="0.1" min="0" placeholder="0.0">
@@ -434,6 +436,8 @@
           <label class="mini" data-i18n="calcHeight">Größe cm</label>
           <input type="number" id="calcHeight" min="0">
         </div>
+      </div>
+      <div class="row macrow">
         <div class="macrocell">
           <label class="mini" data-i18n="calcAge">Alter</label>
           <input type="number" id="calcAge" min="0">

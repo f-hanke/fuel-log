@@ -124,17 +124,23 @@ async function renderWeight(){
 // the ring/heatmap graphics elsewhere): points spaced by actual date, y scaled
 // between the list's min/max weight, with the most recent point highlighted
 function buildWeightChart(list){
-  const width = 300, height = 130, padTop = 14, padBottom = 14, padX = 10;
+  const width = 300, height = 150, padTop = 10, padBottom = 10, padLeft = 34, padRight = 10;
   const weights = list.map((w) => w.weight);
-  const minW = Math.min(...weights), maxW = Math.max(...weights);
-  const wRange = (maxW - minW) || 1;
+  const rawMin = Math.min(...weights), rawMax = Math.max(...weights);
+  // A little headroom above/below the actual min/max so the line never runs
+  // flush along a gridline — makes a flat/near-flat week of weigh-ins still
+  // readable instead of collapsing to a single edge-to-edge line
+  const pad = (rawMax - rawMin) * 0.15 || 0.5;
+  const minW = rawMin - pad, maxW = rawMax + pad;
+  const wRange = maxW - minW;
+
   const dates = list.map((w) => parseDateKey(w.date).getTime());
   const minD = dates[0], maxD = dates[dates.length - 1];
   const dRange = (maxD - minD) || 1;
-  const innerW = width - padX * 2, innerH = height - padTop - padBottom;
+  const innerW = width - padLeft - padRight, innerH = height - padTop - padBottom;
 
   const points = list.map((w, i) => ({
-    x: padX + ((dates[i] - minD) / dRange) * innerW,
+    x: padLeft + ((dates[i] - minD) / dRange) * innerW,
     y: padTop + innerH - ((w.weight - minW) / wRange) * innerH,
   }));
   const pointsAttr = points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
@@ -143,10 +149,24 @@ function buildWeightChart(list){
     return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${isLast ? 4 : 2.5}" class="weight-dot${isLast ? ' weight-dot-last' : ''}"/>`;
   }).join('');
 
+  // A handful of evenly spaced horizontal gridlines, each labeled with its
+  // weight on the left — e.g. 62 / 63.3 / 64.7 / 66 kg — instead of just a
+  // min/max label floating at the very top and bottom
+  const GRID_LINES = 4;
+  const grid = [];
+  for(let i=0; i<GRID_LINES; i++){
+    const frac = i / (GRID_LINES - 1);
+    const y = padTop + innerH - frac * innerH;
+    const val = minW + frac * wRange;
+    grid.push(`
+      <line x1="${padLeft}" y1="${y.toFixed(1)}" x2="${width - padRight}" y2="${y.toFixed(1)}" class="weight-grid-line"/>
+      <text x="${padLeft - 6}" y="${(y + 3).toFixed(1)}" text-anchor="end" class="weight-axis-label">${val.toLocaleString(undefined, { maximumFractionDigits: 1 })}</text>
+    `);
+  }
+
   return `
     <svg viewBox="0 0 ${width} ${height}" class="weight-chart">
-      <text x="${padX}" y="${padTop - 4}" class="weight-axis-label">${maxW.toLocaleString(undefined,{maximumFractionDigits:1})} kg</text>
-      <text x="${padX}" y="${height - 2}" class="weight-axis-label">${minW.toLocaleString(undefined,{maximumFractionDigits:1})} kg</text>
+      ${grid.join('')}
       <polyline points="${pointsAttr}" class="weight-line"/>
       ${dots}
     </svg>
