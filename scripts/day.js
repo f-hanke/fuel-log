@@ -32,9 +32,23 @@ function categoryOf(entry){
   return MEAL_CATEGORIES[entry.category] ? entry.category : 'snacks';
 }
 
+// The 7 header-strip cells, created once and reused on every render (see
+// renderDateBar below) — each cell's own click listener reads its live date
+// from this array rather than a closure captured at creation time.
+const weekStripCellDates = [null, null, null, null, null, null, null];
+
 // Header week strip: shows the whole Mon-Sun week stripAnchor falls in, highlights
 // whichever cell matches currentDate (if any), and marks today separately (in
-// case it isn't the selected day, or isn't even in the currently browsed week)
+// case it isn't the selected day, or isn't even in the currently browsed week).
+//
+// The 7 cells are built once and only ever have their text/class updated after
+// that — rebuilding them from scratch on every render (innerHTML='' + fresh
+// appendChild each time) could occasionally leave a just-recreated cell
+// painting with the wrong background for a moment right after a tap, before a
+// later style recalc corrected it (a real, reproducible timing quirk around
+// var()-based colors on elements replaced within the same tick as the click
+// that triggered the re-render — confirmed with a scripted repro). Updating
+// existing, already-connected nodes in place sidesteps it entirely.
 function renderDateBar(){
   document.getElementById('dateText').textContent = fmtLabel(currentDate);
   document.getElementById('todayTag').classList.toggle('hidden', !isSameDay(currentDate, new Date()));
@@ -44,20 +58,31 @@ function renderDateBar(){
   const monday = new Date(stripAnchor.getFullYear(), stripAnchor.getMonth(), stripAnchor.getDate() + diffToMonday);
 
   const stripEl = document.getElementById('weekStripDays');
-  stripEl.innerHTML = '';
+  if(stripEl.children.length !== 7){
+    stripEl.innerHTML = '';
+    for(let i=0; i<7; i++){
+      const cell = document.createElement('button');
+      cell.className = 'ws-day';
+      cell.innerHTML = `<span class="ws-dow"></span><span class="ws-num"></span>`;
+      cell.addEventListener('click', () => {
+        currentDate = new Date(weekStripCellDates[i]);
+        renderDay();
+      });
+      stripEl.appendChild(cell);
+    }
+  }
+
   const today = new Date();
+  const cells = stripEl.children;
   for(let i=0; i<7; i++){
     const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+    weekStripCellDates[i] = d;
     const isSelected = isSameDay(d, currentDate);
     const isToday = isSameDay(d, today);
-    const cell = document.createElement('button');
+    const cell = cells[i];
     cell.className = 'ws-day' + (isSelected ? ' selected' : '') + (isToday ? ' is-today' : '');
-    cell.innerHTML = `<span class="ws-dow">${t('dow')[d.getDay()]}</span><span class="ws-num">${d.getDate()}</span>`;
-    cell.addEventListener('click', () => {
-      currentDate = new Date(d);
-      renderDay();
-    });
-    stripEl.appendChild(cell);
+    cell.querySelector('.ws-dow').textContent = t('dow')[d.getDay()];
+    cell.querySelector('.ws-num').textContent = d.getDate();
   }
 }
 document.getElementById('prevWeekNav').addEventListener('click', ()=>{

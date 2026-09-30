@@ -102,11 +102,18 @@ body{
   letter-spacing:1px; display:block; margin-top:3px;
 }
 .weekstrip{display:flex; align-items:center; gap:4px;}
-.weekstrip button{
+/* Direct-child combinator (>) so this only ever targets the ‹ › week-nav
+   buttons — a plain descendant selector here also matched the .ws-day cells
+   (they're <button>s nested inside .weekstrip too), and the extra "button"
+   element type gave that :hover rule just enough specificity to beat
+   .ws-day.selected's background. On a touchscreen the :hover state sticks
+   after a tap, so a tapped (correctly green) day would flash green and then
+   sit stuck on this rule's gray background until tapping elsewhere. */
+.weekstrip > button{
   background:none; border:none; color:var(--ink-dim); font-size:18px; cursor:pointer;
   padding:4px 6px; border-radius:6px; flex-shrink:0;
 }
-.weekstrip button:hover{color:var(--lime); background:var(--bg-panel-2);}
+.weekstrip > button:hover{color:var(--lime); background:var(--bg-panel-2);}
 .weekstrip-days{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; flex:1; min-width:0;}
 .ws-day{
   background:var(--bg-panel-2); border:1px solid var(--line); border-radius:8px; color:var(--ink);
