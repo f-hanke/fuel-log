@@ -237,7 +237,7 @@ body{
 }
 .fab-add:hover{background:#D9FF55;}
 
-.macrocell{flex:1;}
+.macrocell{flex:1; min-width:0;}
 
 /* Shared form-field look, used by the modals, the add-food page and the
    weight page alike — kept generic instead of re-scoped per container */
@@ -260,13 +260,12 @@ input[type="date"]::-webkit-datetime-edit-day-field,
 input[type="date"]::-webkit-datetime-edit-year-field{
   color:var(--ink);
 }
-/* The native calendar icon sits right at the field's own edge by default,
-   with barely any breathing room before the input's border — a bit of its
-   own padding plus a touch of extra right padding on the field keeps it from
-   looking like it runs into the edge */
-input[type="date"]{padding-right:6px;}
+/* Keep the same left/right padding as every other input (symmetric) — only
+   give the calendar icon a small margin so it doesn't sit flush against the
+   date text, instead of shrinking the field's own right-side padding, which
+   just made it look lopsided compared to the left side */
 input[type="date"]::-webkit-calendar-picker-indicator{
-  filter:invert(0.8); padding:4px; margin-right:2px;
+  filter:invert(0.8); margin-left:6px;
 }
 :root[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{filter:none;}
 input.name-input{flex:2;}
