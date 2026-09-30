@@ -153,6 +153,13 @@ async function renderDay(){
   currentEntries.forEach((e, idx) => grouped[categoryOf(e)].push({ ...e, idx }));
 
   Object.keys(MEAL_CATEGORIES).forEach((cat) => renderMealGroup(cat, grouped[cat]));
+
+  // Keeps the 3 preview cards (defined in week-month.js / weight.js) fresh
+  // every time the day view renders — not awaited, each just fills in its
+  // own stats line whenever it's done
+  renderWeekPreview();
+  renderMonthPreview();
+  renderWeightPreview();
 }
 
 // Renders one category's meal list, its kcal subtotal badge, and its header's

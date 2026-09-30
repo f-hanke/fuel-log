@@ -20,6 +20,7 @@ const TRANSLATIONS_DE = {
   weightCurrentLabel: 'Aktuell', weightChangeLabel: 'Verlauf', weightCountLabel: 'Einträge',
   weightEmpty: 'Noch kein Gewicht erfasst.', weightNeedMore: 'Noch ein Eintrag nötig für einen Graphen.',
   weightAddBtn: 'Gewicht eintragen',
+  showAll: 'Alle anzeigen', showLess: 'Weniger anzeigen', previewEmpty: 'Noch keine Daten',
   wsKcalAvg: 'Ø kcal/Tag', wsProteinAvg: 'Ø Protein/Tag', wsDaysLogged: 'Tage geloggt',
   backToDay: 'Zurück zum Tag',
   loadingMonth: 'Lade Monat…',

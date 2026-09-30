@@ -20,6 +20,7 @@ const TRANSLATIONS_EN = {
   weightCurrentLabel: 'Current', weightChangeLabel: 'Change', weightCountLabel: 'Entries',
   weightEmpty: 'No weight logged yet.', weightNeedMore: 'One more entry needed for a chart.',
   weightAddBtn: 'Log weight',
+  showAll: 'Show all', showLess: 'Show less', previewEmpty: 'No data yet',
   wsKcalAvg: 'Avg kcal/day', wsProteinAvg: 'Avg protein/day', wsDaysLogged: 'Days logged',
   backToDay: 'Back to day',
   loadingMonth: 'Loading month…',

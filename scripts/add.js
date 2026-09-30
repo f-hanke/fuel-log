@@ -411,6 +411,7 @@ function resetCopyTab(){
 async function loadCopySource(){
   const dateKey = document.getElementById('copyDateInput').value;
   if(!dateKey){ document.getElementById('copyResults').innerHTML = ''; copySourceEntries = []; return; }
+  document.getElementById('copyDateText').textContent = fmtLabel(parseDateKey(dateKey));
   copySourceEntries = await loadEntries(parseDateKey(dateKey));
   renderCopyResults();
 }

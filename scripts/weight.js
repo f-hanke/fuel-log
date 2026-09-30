@@ -3,8 +3,13 @@
 // with a simple current/change/count summary. Stored as its own localStorage
 // array (fuellog:weights), independent of the daily meal entries.
 
+// Whether the history list below the chart shows everything or just the
+// last 5 — reset to collapsed every time the page is freshly opened
+let weightHistoryExpanded = false;
+
 document.getElementById('toggleWeight').addEventListener('click', async ()=>{
   showView('weight');
+  weightHistoryExpanded = false;
   await renderWeight();
 });
 document.getElementById('weightBack').addEventListener('click', ()=> showView('day'));
@@ -41,6 +46,7 @@ function openWeightModal(dateKey, weight){
   const dateInput = document.getElementById('wmDate');
   dateInput.max = fmtKey(new Date());
   dateInput.value = dateKey;
+  document.getElementById('wmDateText').textContent = fmtLabel(parseDateKey(dateKey));
   document.getElementById('wmWeight').value = weight != null ? weight : '';
   document.getElementById('weightModal').classList.remove('hidden');
 }
@@ -56,6 +62,7 @@ document.getElementById('weightAddBtn').addEventListener('click', ()=>{
 // so switching to a past day acts as "edit" rather than overwriting it blind
 document.getElementById('wmDate').addEventListener('change', ()=>{
   const dateKey = document.getElementById('wmDate').value;
+  document.getElementById('wmDateText').textContent = fmtLabel(parseDateKey(dateKey));
   const existing = loadWeights().find((w) => w.date === dateKey);
   document.getElementById('wmWeight').value = existing ? existing.weight : '';
 });
@@ -95,10 +102,16 @@ async function renderWeight(){
     : `<div class="search-hint">${t('weightNeedMore')}</div>`;
 
   // Tapping a row opens the modal pre-filled with that day for quick editing;
-  // the ✕ deletes it directly (stopPropagation so it doesn't also open the modal)
+  // the ✕ deletes it directly (stopPropagation so it doesn't also open the
+  // modal). Collapsed to the last 5 by default — "Alle anzeigen" below shows
+  // the rest, re-rendering with weightHistoryExpanded flipped.
+  const HISTORY_COLLAPSED_COUNT = 5;
+  const reversed = [...list].reverse();
+  const shown = weightHistoryExpanded ? reversed : reversed.slice(0, HISTORY_COLLAPSED_COUNT);
+
   const historyEl = document.getElementById('weightHistory');
   historyEl.innerHTML = '';
-  [...list].reverse().forEach((w) => {
+  shown.forEach((w) => {
     const row = document.createElement('div');
     row.className = 'weight-row';
     row.innerHTML = `
@@ -118,6 +131,29 @@ async function renderWeight(){
       await renderWeight();
     });
   });
+
+  if(list.length > HISTORY_COLLAPSED_COUNT){
+    const moreBtn = document.createElement('button');
+    moreBtn.className = 'weight-show-all';
+    moreBtn.textContent = weightHistoryExpanded ? t('showLess') : `${t('showAll')} (${list.length})`;
+    moreBtn.addEventListener('click', () => {
+      weightHistoryExpanded = !weightHistoryExpanded;
+      renderWeight();
+    });
+    historyEl.appendChild(moreBtn);
+  }
+}
+
+// Day view preview card: latest weight + change since the first entry, same
+// numbers as the weight page's own summary row, just condensed to one line
+async function renderWeightPreview(){
+  const list = loadWeights();
+  const statsEl = document.getElementById('weightPreviewStats');
+  if(list.length === 0){ statsEl.textContent = t('previewEmpty'); return; }
+  const current = list[list.length - 1].weight;
+  const change = current - list[0].weight;
+  const changeText = (change >= 0 ? '+' : '') + change.toLocaleString(undefined, { maximumFractionDigits: 1 });
+  statsEl.textContent = `${current.toLocaleString(undefined, { maximumFractionDigits: 1 })} kg · ${changeText} kg`;
 }
 
 // Builds a simple SVG line chart (no library — same hand-rolled approach as

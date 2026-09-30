@@ -166,10 +166,26 @@
       <div id="mealListSnacks" class="hidden"></div>
     </div>
 
-    <div class="view-toggle">
-      <button id="toggleWeek" data-i18n="showWeek">Woche</button>
-      <button id="toggleMonth" data-i18n="showMonth">Monat</button>
-      <button id="toggleWeight" data-i18n="showWeight">Gewicht</button>
+    <div class="page-preview" id="toggleWeek">
+      <div class="page-preview-header">
+        <span class="page-preview-title" data-i18n="showWeek">Woche</span>
+        <span class="page-preview-arrow">›</span>
+      </div>
+      <div class="page-preview-stats" id="weekPreviewStats">–</div>
+    </div>
+    <div class="page-preview" id="toggleMonth">
+      <div class="page-preview-header">
+        <span class="page-preview-title" data-i18n="showMonth">Monat</span>
+        <span class="page-preview-arrow">›</span>
+      </div>
+      <div class="page-preview-stats" id="monthPreviewStats">–</div>
+    </div>
+    <div class="page-preview" id="toggleWeight">
+      <div class="page-preview-header">
+        <span class="page-preview-title" data-i18n="showWeight">Gewicht</span>
+        <span class="page-preview-arrow">›</span>
+      </div>
+      <div class="page-preview-stats" id="weightPreviewStats">–</div>
     </div>
   </div>
 
@@ -188,7 +204,6 @@
     </div>
     <div id="weekList"></div>
     <div class="week-toggle">
-      <button id="toggleWeekToMonth" data-i18n="showMonth">Monat</button>
       <button id="toggleWeekBack" data-i18n="backToDay">Zurück zum Tag</button>
     </div>
   </div>
@@ -206,7 +221,6 @@
     </div>
     <div id="monthHeatmap"></div>
     <div class="week-toggle">
-      <button id="toggleMonthToWeek" data-i18n="showWeek">Woche</button>
       <button id="toggleMonthBack" data-i18n="backToDay">Zurück zum Tag</button>
     </div>
   </div>
@@ -276,7 +290,13 @@
       <div class="row">
         <div class="macrocell">
           <label class="mini" data-i18n="copyDateLabel">Von Datum</label>
-          <input type="date" id="copyDateInput">
+          <div class="date-field-wrap">
+            <div class="date-field-display">
+              <span class="date-field-text" id="copyDateText">–</span>
+              <svg class="date-field-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+            </div>
+            <input type="date" id="copyDateInput" class="date-field-native">
+          </div>
         </div>
       </div>
       <div id="copyResults"></div>
@@ -379,7 +399,13 @@
     <div class="row">
       <div class="macrocell">
         <label class="mini" data-i18n="weightDateLabel">Datum</label>
-        <input type="date" id="wmDate">
+        <div class="date-field-wrap">
+          <div class="date-field-display">
+            <span class="date-field-text" id="wmDateText">–</span>
+            <svg class="date-field-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
+          </div>
+          <input type="date" id="wmDate" class="date-field-native">
+        </div>
       </div>
     </div>
     <div class="row">

@@ -1,17 +1,15 @@
 // Week and month views: navigation between periods, the day/week/month panel
 // switcher, and the month view's list/heatmap rendering.
 
+// Week/month are only ever reached from their preview card on the day view,
+// and only ever go back to the day view — no more cross-navigation between
+// the two, so each just has the one "Zurück zum Tag" button.
 document.getElementById('toggleWeek').addEventListener('click', async ()=>{
   showView('week');
   weekOffset = 0; // always open on the current week, not wherever we left off last time
   await renderWeek();
 });
 document.getElementById('toggleWeekBack').addEventListener('click', ()=> showView('day'));
-document.getElementById('toggleWeekToMonth').addEventListener('click', async ()=>{
-  showView('month');
-  monthOffset = 0;
-  await renderMonth();
-});
 
 document.getElementById('toggleMonth').addEventListener('click', async ()=>{
   showView('month');
@@ -19,11 +17,6 @@ document.getElementById('toggleMonth').addEventListener('click', async ()=>{
   await renderMonth();
 });
 document.getElementById('toggleMonthBack').addEventListener('click', ()=> showView('day'));
-document.getElementById('toggleMonthToWeek').addEventListener('click', async ()=>{
-  showView('week');
-  weekOffset = 0;
-  await renderWeek();
-});
 
 // 0 = the calendar week containing today, -1 = one week earlier, +1 = one week later, ...
 let weekOffset = 0;
@@ -178,4 +171,39 @@ async function renderMonth(){
     <span class="sw" style="background:var(--amber)"></span>${t('legendOver')}
   `;
   heatEl.appendChild(legend);
+}
+
+// --- Day view preview cards ---
+// Lightweight versions of renderWeek/renderMonth's own averages — just the
+// current (offset-0) week/month, no day-by-day rows, so the day view doesn't
+// pay for building a list it isn't showing.
+async function renderWeekPreview(){
+  const today = new Date();
+  const dow = today.getDay();
+  const diffToMonday = (dow === 0 ? -6 : 1 - dow);
+  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + diffToMonday);
+
+  let loggedDays = 0, kcalSum = 0;
+  for(let i=0; i<7; i++){
+    const entries = await loadEntries(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i));
+    if(entries.length){ loggedDays++; kcalSum += sumEntries(entries).kcal; }
+  }
+  document.getElementById('weekPreviewStats').textContent = loggedDays
+    ? `Ø ${Math.round(kcalSum / loggedDays)} kcal · ${loggedDays}/7 ${t('wsDaysLogged')}`
+    : t('previewEmpty');
+}
+
+async function renderMonthPreview(){
+  const today = new Date();
+  const year = today.getFullYear(), month = today.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  let loggedDays = 0, kcalSum = 0;
+  for(let d=1; d<=daysInMonth; d++){
+    const entries = await loadEntries(new Date(year, month, d));
+    if(entries.length){ loggedDays++; kcalSum += sumEntries(entries).kcal; }
+  }
+  document.getElementById('monthPreviewStats').textContent = loggedDays
+    ? `Ø ${Math.round(kcalSum / loggedDays)} kcal · ${loggedDays}/${daysInMonth} ${t('wsDaysLogged')}`
+    : t('previewEmpty');
 }
