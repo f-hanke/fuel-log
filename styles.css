@@ -35,11 +35,20 @@
    "turned gray" for a moment while that overlay faded, even though the
    underlying selected state was already correct the whole time. */
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html{overflow-x:hidden;}
 body{
   margin:0; background:var(--bg); color:var(--ink);
   font-family:var(--font-body);
   padding:0 0 calc(100px + env(safe-area-inset-bottom, 0px)) 0;
   -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+  /* Belt-and-suspenders: a fixed-position modal's own width is never part of
+     the document's scrollable area, which is exactly why the weight-modal
+     date field could be fixed without the same fix reaching the Übernehmen
+     tab's identical-looking field, still sitting in normal page flow — if
+     iOS ever renders a native input/select wider than its own box again,
+     this stops it from ever making the whole page scroll sideways instead of
+     just clipping that one control. */
 }
 /* Standalone PWA mode draws the app right under the phone's status bar (clock,
    battery), so push the whole page down by the device's safe-area inset —
@@ -246,7 +255,7 @@ body{
 input[type="text"], input[type="number"], input[type="email"], input[type="date"], select{
   background:var(--bg-panel-2); border:1px solid var(--line); border-radius:7px;
   color:var(--ink); padding:9px 10px; font-family:var(--font-body); font-size:14px;
-  width:100%; outline:none;
+  width:100%; max-width:100%; outline:none;
 }
 input:focus, select:focus{border-color:var(--lime);}
 /* Safari renders the native date-input text using the platform's own dark/light
