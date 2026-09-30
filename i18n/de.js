@@ -5,7 +5,7 @@ const TRANSLATIONS_DE = {
   labelKcal: 'kcal', labelProtein: 'Protein', labelCarbs: 'Carbs', labelFat: 'Fett',
   of: 'von',
   sectionMeals: 'Mahlzeiten', sectionAdd: 'Eintrag hinzufügen',
-  emptyDay: 'Noch keine Mahlzeiten für diesen Tag erfasst.',
+  catBreakfast: 'Frühstück', catLunch: 'Mittag', catDinner: 'Abendbrot', catSnacks: 'Snacks',
   namePlaceholder: 'z.B. Abendbrot',
   miniKcal: 'Kcal', miniProtein: 'Protein', miniCarbs: 'Carbs', miniFat: 'Fett',
   addBtn: 'Hinzufügen', showWeek: 'Woche', showMonth: 'Monat',

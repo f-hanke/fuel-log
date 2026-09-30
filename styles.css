@@ -33,7 +33,7 @@
 body{
   margin:0; background:var(--bg); color:var(--ink);
   font-family:var(--font-body);
-  padding:0 0 60px 0;
+  padding:0 0 calc(90px + env(safe-area-inset-bottom, 0px)) 0;
   -webkit-font-smoothing:antialiased;
 }
 /* Standalone PWA mode draws the app right under the phone's status bar (clock,
@@ -141,29 +141,35 @@ body{
 }
 .edit-btn:hover{color:var(--lime); background:var(--bg-panel-2);}
 
-.empty{
-  color:var(--ink-dim); font-size:14px; text-align:center; padding:24px 10px;
-  border:1px dashed var(--line); border-radius:10px;
+.meal-group{margin-bottom:18px;}
+.meal-group-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:6px 2px 8px; margin-bottom:8px; border-bottom:1px solid var(--line); cursor:pointer;
 }
+.meal-group-header:hover{border-color:var(--lime);}
+.meal-group-header .cat-name{
+  font-family:var(--font-body); font-weight:700; font-size:13.5px;
+}
+.meal-group-header .cat-meta{display:flex; align-items:center; gap:10px;}
+.meal-group-header .cat-kcal{
+  font-family:var(--font-mono); font-weight:500; font-size:12px; color:var(--ink-dim);
+}
+.meal-group-header .cat-add{
+  width:20px; height:20px; border-radius:50%; border:1px solid var(--line); color:var(--ink-dim);
+  display:flex; align-items:center; justify-content:center; font-size:14px; line-height:1;
+}
+.meal-group-header:hover .cat-add{border-color:var(--lime); color:var(--lime);}
 
-.addform{
-  background:var(--bg-panel); border:1px solid var(--line); border-radius:12px;
-  padding:14px; margin-top:10px;
+.fab-add{
+  position:fixed; left:50%; transform:translateX(-50%);
+  bottom:calc(20px + env(safe-area-inset-bottom, 0px));
+  width:56px; height:56px; border-radius:50%; background:var(--lime); color:#0F1613;
+  border:none; font-size:28px; font-weight:700; line-height:1; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 18px rgba(0,0,0,0.35); z-index:60;
 }
-.addform .row{display:flex; gap:8px; margin-bottom:8px;}
-.addform input{
-  background:var(--bg-panel-2); border:1px solid var(--line); border-radius:7px;
-  color:var(--ink); padding:9px 10px; font-family:var(--font-body); font-size:14px;
-  width:100%; outline:none;
-}
-.addform input:focus{border-color:var(--lime);}
-.addform input.name-input{flex:2;}
-.addform .macrow input{flex:1; min-width:0;}
-.addform .macrow{margin-bottom:10px;}
-.addform label.mini{
-  font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim);
-  text-transform:uppercase; display:block; margin-bottom:4px; letter-spacing:0.4px;
-}
+.fab-add:hover{background:#D9FF55;}
+
 .macrocell{flex:1;}
 .add-submit{
   width:100%; background:var(--lime); color:#0F1613; border:none; border-radius:8px;
@@ -246,7 +252,7 @@ body{
 .modal-box .modal-text{
   font-family:var(--font-body); font-weight:500; font-size:13px; color:var(--ink-dim); margin-bottom:18px;
 }
-/* Form fields inside the edit modal (mirrors .addform's input styling) */
+/* Form fields shared by the add/edit modals */
 .modal-box .row{display:flex; gap:8px; margin:14px 0 8px;}
 .modal-box .macrow{margin-bottom:14px;}
 .modal-box input{

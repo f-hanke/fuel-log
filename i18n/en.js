@@ -5,7 +5,7 @@ const TRANSLATIONS_EN = {
   labelKcal: 'kcal', labelProtein: 'Protein', labelCarbs: 'Carbs', labelFat: 'Fat',
   of: 'of',
   sectionMeals: 'Meals', sectionAdd: 'Add entry',
-  emptyDay: 'No meals logged for this day yet.',
+  catBreakfast: 'Breakfast', catLunch: 'Lunch', catDinner: 'Dinner', catSnacks: 'Snacks',
   namePlaceholder: 'e.g. Dinner',
   miniKcal: 'Kcal', miniProtein: 'Protein', miniCarbs: 'Carbs', miniFat: 'Fat',
   addBtn: 'Add', showWeek: 'Week', showMonth: 'Month',

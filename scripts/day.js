@@ -1,5 +1,6 @@
-// Day view: rendering the stat tiles + meal list, the add-meal form, and the
-// edit/delete confirmation popups for individual meal entries.
+// Day view: rendering the stat tiles + the meal list (grouped into breakfast/
+// lunch/dinner/snacks), the add-meal modal (opened via the floating + button or
+// by tapping a category header), and the edit/delete confirmation popups.
 
 let currentDate = new Date();
 let currentEntries = [];
@@ -10,8 +11,20 @@ function setStatTile(numId, ringId, value, target){
   document.getElementById(ringId).style.strokeDashoffset = 100 - pct(value, target);
 }
 
-// Main day-view render: loads the day's entries, updates the macro stat tiles/bars
-// and rebuilds the meal list. Called on load, day navigation, add, and delete.
+// Meal categories: category id -> the suffix used by its list/kcal element ids
+// (mealListBreakfast, catKcalBreakfast, ...). Entries saved before this feature
+// existed have no `category` field — those fall back to 'snacks' wherever a
+// category is read, so old data still displays without needing a migration.
+const MEAL_CATEGORIES = {
+  breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snacks: 'Snacks',
+};
+function categoryOf(entry){
+  return MEAL_CATEGORIES[entry.category] ? entry.category : 'snacks';
+}
+
+// Main day-view render: loads the day's entries, updates the macro stat tiles/rings
+// and rebuilds each category's meal list. Called on load, day navigation, add,
+// edit and delete.
 async function renderDay(){
   document.getElementById('dateText').textContent = fmtLabel(currentDate);
   document.getElementById('todayTag').classList.toggle('hidden', !isSameDay(currentDate, new Date()));
@@ -27,40 +40,48 @@ async function renderDay(){
   setStatTile('statCarbs', 'ringCarbs', totals.carbs, TARGETS.carbs);
   setStatTile('statFat', 'ringFat', totals.fat, TARGETS.fat);
 
-  const listEl = document.getElementById('mealList');
+  // Group entries by category, keeping each entry's original index into
+  // currentEntries — edit/delete always operate on that flat array by index.
+  const grouped = { breakfast: [], lunch: [], dinner: [], snacks: [] };
+  currentEntries.forEach((e, idx) => grouped[categoryOf(e)].push({ ...e, idx }));
+
+  Object.keys(MEAL_CATEGORIES).forEach((cat) => renderMealGroup(cat, grouped[cat]));
+}
+
+// Renders one category's meal list and its kcal subtotal badge
+function renderMealGroup(category, entries){
+  const suffix = MEAL_CATEGORIES[category];
+  const kcalTotal = entries.reduce((s, e) => s + (Number(e.kcal) || 0), 0);
+  document.getElementById('catKcal' + suffix).textContent = Math.round(kcalTotal) + ' kcal';
+
+  const listEl = document.getElementById('mealList' + suffix);
   listEl.innerHTML = '';
-  if(currentEntries.length === 0){
-    listEl.innerHTML = `<div class="empty">${t('emptyDay')}</div>`;
-  } else {
-    currentEntries.forEach((e, idx)=>{
-      const row = document.createElement('div');
-      row.className = 'meal';
-      row.innerHTML = `
-        <div>
-          <div class="name">${escapeHtml(e.name || t('meal'))}</div>
-          <div class="macros">P ${Math.round(e.protein)||0}g · C ${Math.round(e.carbs)||0}g · F ${Math.round(e.fat)||0}g</div>
-        </div>
-        <div class="meal-right">
-          <span class="kcalval">${Math.round(e.kcal)||0}</span>
-          <button class="edit-btn" data-idx="${idx}" title="${t('editTooltip')}">✎</button>
-          <button class="del-btn" data-idx="${idx}" title="${t('deleteTooltip')}">✕</button>
-        </div>
-      `;
-      listEl.appendChild(row);
+  entries.forEach((e) => {
+    const row = document.createElement('div');
+    row.className = 'meal';
+    row.innerHTML = `
+      <div>
+        <div class="name">${escapeHtml(e.name || t('meal'))}</div>
+        <div class="macros">P ${Math.round(e.protein)||0}g · C ${Math.round(e.carbs)||0}g · F ${Math.round(e.fat)||0}g</div>
+      </div>
+      <div class="meal-right">
+        <span class="kcalval">${Math.round(e.kcal)||0}</span>
+        <button class="edit-btn" data-idx="${e.idx}" title="${t('editTooltip')}">✎</button>
+        <button class="del-btn" data-idx="${e.idx}" title="${t('deleteTooltip')}">✕</button>
+      </div>
+    `;
+    listEl.appendChild(row);
+  });
+  listEl.querySelectorAll('.edit-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      openEditModal(Number(btn.getAttribute('data-idx')));
     });
-    listEl.querySelectorAll('.edit-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const idx = Number(btn.getAttribute('data-idx'));
-        openEditModal(idx);
-      });
+  });
+  listEl.querySelectorAll('.del-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      openDeleteModal(Number(btn.getAttribute('data-idx')));
     });
-    listEl.querySelectorAll('.del-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const idx = Number(btn.getAttribute('data-idx'));
-        openDeleteModal(idx);
-      });
-    });
-  }
+  });
 }
 
 let pendingDeleteIdx = null;
@@ -98,6 +119,7 @@ function openEditModal(idx){
   pendingEditIdx = idx;
   const entry = currentEntries[idx];
   if(!entry) return;
+  document.getElementById('eCategory').value = categoryOf(entry);
   document.getElementById('eName').value = entry.name || '';
   document.getElementById('eKcal').value = entry.kcal || '';
   document.getElementById('eProtein').value = entry.protein || '';
@@ -117,6 +139,7 @@ document.getElementById('editModal').addEventListener('click', (e)=>{
 });
 document.getElementById('editSaveBtn').addEventListener('click', async ()=>{
   if(pendingEditIdx === null) return;
+  const category = document.getElementById('eCategory').value;
   const name = document.getElementById('eName').value.trim();
   const kcal = document.getElementById('eKcal').value;
   const protein = document.getElementById('eProtein').value;
@@ -124,7 +147,7 @@ document.getElementById('editSaveBtn').addEventListener('click', async ()=>{
   const fat = document.getElementById('eFat').value;
   if(!name || !kcal){ return; }
   currentEntries[pendingEditIdx] = {
-    name, kcal: Number(kcal)||0, protein: Number(protein)||0,
+    category, name, kcal: Number(kcal)||0, protein: Number(protein)||0,
     carbs: Number(carbs)||0, fat: Number(fat)||0
   };
   await saveEntries(currentDate, currentEntries);
@@ -141,23 +164,54 @@ document.getElementById('nextDay').addEventListener('click', ()=>{
   renderDay();
 });
 
-// Read the add-meal form, append a new entry for the current day, save and re-render
-document.getElementById('addBtn').addEventListener('click', async ()=>{
-  const name = document.getElementById('mName').value.trim();
-  const kcal = document.getElementById('mKcal').value;
-  const protein = document.getElementById('mProtein').value;
-  const carbs = document.getElementById('mCarbs').value;
-  const fat = document.getElementById('mFat').value;
+// Add modal: opened either via the floating + button (category guessed from the
+// current time of day) or by tapping a category header (that category preset)
+function openAddModal(category){
+  document.getElementById('aCategory').value = category;
+  document.getElementById('aName').value = '';
+  document.getElementById('aKcal').value = '';
+  document.getElementById('aProtein').value = '';
+  document.getElementById('aCarbs').value = '';
+  document.getElementById('aFat').value = '';
+  document.getElementById('addModal').classList.remove('hidden');
+  document.getElementById('aName').focus();
+}
+function closeAddModal(){
+  document.getElementById('addModal').classList.add('hidden');
+}
+function defaultCategoryByTime(){
+  const h = new Date().getHours();
+  if(h < 11) return 'breakfast';
+  if(h < 15) return 'lunch';
+  if(h < 20) return 'dinner';
+  return 'snacks';
+}
+
+document.getElementById('fabAdd').addEventListener('click', ()=>{
+  openAddModal(defaultCategoryByTime());
+});
+document.querySelectorAll('.meal-group-header').forEach((header)=>{
+  header.addEventListener('click', ()=>{
+    openAddModal(header.getAttribute('data-category'));
+  });
+});
+document.getElementById('addCancelBtn').addEventListener('click', closeAddModal);
+document.getElementById('addModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'addModal') closeAddModal();
+});
+document.getElementById('addConfirmBtn').addEventListener('click', async ()=>{
+  const category = document.getElementById('aCategory').value;
+  const name = document.getElementById('aName').value.trim();
+  const kcal = document.getElementById('aKcal').value;
+  const protein = document.getElementById('aProtein').value;
+  const carbs = document.getElementById('aCarbs').value;
+  const fat = document.getElementById('aFat').value;
   if(!name || !kcal){ return; }
   currentEntries.push({
-    name, kcal: Number(kcal)||0, protein: Number(protein)||0,
+    category, name, kcal: Number(kcal)||0, protein: Number(protein)||0,
     carbs: Number(carbs)||0, fat: Number(fat)||0
   });
   await saveEntries(currentDate, currentEntries);
-  document.getElementById('mName').value='';
-  document.getElementById('mKcal').value='';
-  document.getElementById('mProtein').value='';
-  document.getElementById('mCarbs').value='';
-  document.getElementById('mFat').value='';
+  closeAddModal();
   renderDay();
 });

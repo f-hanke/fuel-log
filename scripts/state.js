@@ -86,6 +86,7 @@ function showView(view){
   document.getElementById('datebar').classList.toggle('hidden', view !== 'day');
   document.getElementById('weekView').classList.toggle('hidden', view !== 'week');
   document.getElementById('monthView').classList.toggle('hidden', view !== 'month');
+  document.getElementById('fabAdd').classList.toggle('hidden', view !== 'day');
 }
 
 // Jump straight to a given day (used when tapping a row/cell in week or month view)
