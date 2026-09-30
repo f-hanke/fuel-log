@@ -73,21 +73,20 @@ document.getElementById('addConfirmBtn').addEventListener('click', async ()=>{
 });
 
 // --- Suche tab: Open Food Facts product search ---
+// Each result has a quick + button (adds 100g instantly, no scrolling/typing)
+// and can also be tapped to expand an inline amount editor right underneath
+// itself — never a separate section at the bottom of the page.
 let searchResults = [];
-let selectedProduct = null;
 
 function resetSearchTab(){
   document.getElementById('searchInput').value = '';
   document.getElementById('searchResults').innerHTML = '';
-  document.getElementById('searchDetail').classList.add('hidden');
   searchResults = [];
-  selectedProduct = null;
 }
 
 async function runSearch(){
   const query = document.getElementById('searchInput').value.trim();
   const resultsEl = document.getElementById('searchResults');
-  document.getElementById('searchDetail').classList.add('hidden');
   if(!query){ resultsEl.innerHTML = ''; return; }
 
   resultsEl.innerHTML = `<div class="loading">${t('searching')}</div>`;
@@ -116,32 +115,37 @@ function renderSearchResults(){
   resultsEl.innerHTML = '';
   searchResults.forEach((p, idx) => {
     const kcal100 = Math.round(p.nutriments['energy-kcal_100g']);
-    const row = document.createElement('div');
-    row.className = 'meal search-result';
-    row.innerHTML = `
-      <div>
-        <div class="name">${escapeHtml(p.product_name)}</div>
-        <div class="macros">${escapeHtml(p.brands || '')}</div>
+    const wrap = document.createElement('div');
+    wrap.className = 'search-result-wrap';
+    wrap.innerHTML = `
+      <div class="meal search-result" data-idx="${idx}">
+        <div>
+          <div class="name">${escapeHtml(p.product_name)}</div>
+          <div class="macros">${escapeHtml(p.brands || '')}</div>
+        </div>
+        <div class="meal-right">
+          <span class="kcalval">${kcal100} kcal/100g</span>
+          <button class="quick-add-btn" data-idx="${idx}" title="${t('addBtn')}">+</button>
+        </div>
       </div>
-      <div class="meal-right"><span class="kcalval">${kcal100} kcal/100g</span></div>
+      <div class="search-result-detail hidden" data-idx="${idx}">
+        <div class="row">
+          <div class="macrocell">
+            <label class="mini" data-i18n="searchAmount">Menge (g)</label>
+            <input type="number" class="grams-input" data-idx="${idx}" value="100" min="1">
+          </div>
+        </div>
+        <div class="detail-macros" data-idx="${idx}">${macroSummary(p, 100)}</div>
+        <button class="add-submit confirm-add-btn" data-idx="${idx}">${t('addBtn')}</button>
+      </div>
     `;
-    row.addEventListener('click', () => selectSearchResult(idx));
-    resultsEl.appendChild(row);
+    resultsEl.appendChild(wrap);
   });
 }
 
-function selectSearchResult(idx){
-  selectedProduct = searchResults[idx];
-  document.getElementById('searchDetailName').textContent = selectedProduct.product_name;
-  document.getElementById('searchGrams').value = 100;
-  updateSearchTotals();
-  document.getElementById('searchDetail').classList.remove('hidden');
-}
-
-// Scales the selected product's per-100g nutriments to the entered gram amount
-function scaledMacros(){
-  const grams = Number(document.getElementById('searchGrams').value) || 0;
-  const n = selectedProduct.nutriments;
+// Scales one product's per-100g nutriments to the given gram amount
+function scaledMacros(product, grams){
+  const n = product.nutriments;
   const factor = grams / 100;
   return {
     kcal: Math.round((n['energy-kcal_100g'] || 0) * factor),
@@ -150,21 +154,55 @@ function scaledMacros(){
     fat: Math.round((n['fat_100g'] || 0) * factor),
   };
 }
-function updateSearchTotals(){
-  if(!selectedProduct) return;
-  const m = scaledMacros();
-  document.getElementById('searchKcal').textContent = m.kcal;
-  document.getElementById('searchProtein').textContent = m.protein;
-  document.getElementById('searchCarbs').textContent = m.carbs;
-  document.getElementById('searchFat').textContent = m.fat;
+function macroSummary(product, grams){
+  const m = scaledMacros(product, grams);
+  return `${m.kcal} kcal · ${m.protein}g P · ${m.carbs}g C · ${m.fat}g F`;
+}
+
+// Expands/collapses the inline amount editor for one result, closing any other
+function toggleResultDetail(idx){
+  const target = document.querySelector(`.search-result-detail[data-idx="${idx}"]`);
+  const wasHidden = target.classList.contains('hidden');
+  document.querySelectorAll('.search-result-detail').forEach((d) => d.classList.add('hidden'));
+  if(wasHidden){
+    target.classList.remove('hidden');
+    const gramsInput = target.querySelector('.grams-input');
+    gramsInput.focus();
+    gramsInput.select();
+  }
+}
+
+async function addSearchResult(idx, grams){
+  const p = searchResults[idx];
+  await addEntry({ name: p.product_name, ...scaledMacros(p, grams) });
 }
 
 document.getElementById('searchBtn').addEventListener('click', runSearch);
 document.getElementById('searchInput').addEventListener('keydown', (e) => {
   if(e.key === 'Enter'){ e.preventDefault(); runSearch(); }
 });
-document.getElementById('searchGrams').addEventListener('input', updateSearchTotals);
-document.getElementById('searchAddBtn').addEventListener('click', async () => {
-  if(!selectedProduct) return;
-  await addEntry({ name: selectedProduct.product_name, ...scaledMacros() });
+
+// Delegated listeners: search results are rebuilt on every search, so a single
+// listener on the (static) container handles clicks/input for all of them
+document.getElementById('searchResults').addEventListener('click', async (e) => {
+  const quickBtn = e.target.closest('.quick-add-btn');
+  if(quickBtn){ await addSearchResult(Number(quickBtn.getAttribute('data-idx')), 100); return; }
+
+  const confirmBtn = e.target.closest('.confirm-add-btn');
+  if(confirmBtn){
+    const idx = Number(confirmBtn.getAttribute('data-idx'));
+    const grams = Number(document.querySelector(`.grams-input[data-idx="${idx}"]`).value) || 0;
+    await addSearchResult(idx, grams);
+    return;
+  }
+
+  const row = e.target.closest('.search-result');
+  if(row){ toggleResultDetail(Number(row.getAttribute('data-idx'))); }
+});
+document.getElementById('searchResults').addEventListener('input', (e) => {
+  const gramsInput = e.target.closest('.grams-input');
+  if(!gramsInput) return;
+  const idx = Number(gramsInput.getAttribute('data-idx'));
+  const grams = Number(gramsInput.value) || 0;
+  document.querySelector(`.detail-macros[data-idx="${idx}"]`).textContent = macroSummary(searchResults[idx], grams);
 });
