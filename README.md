@@ -19,6 +19,22 @@ A lightweight nutrition and macro tracker, built as an installable Progressive W
   - Editable daily macro targets, or auto-calculate them from body stats (Mifflin-St Jeor)
 - **Installable PWA** — add to your home screen, works offline, auto-updates in the background
 
+## Install on your phone
+
+Fuel Log is a PWA, so it installs like an app straight from the browser — no App/Play Store needed.
+
+**iOS (Safari):**
+1. Open https://f-hanke.github.io/fuel-log/ in Safari (must be Safari, not Chrome — other iOS browsers can't install PWAs)
+2. Tap the **Share** icon
+3. Tap **"Add to Home Screen"**, then **Add**
+
+**Android (Chrome):**
+1. Open https://f-hanke.github.io/fuel-log/ in Chrome
+2. Tap the **⋮** menu
+3. Tap **"Add to Home screen"** (or accept the "Install app" prompt if Chrome shows one automatically), then **Add**/**Install**
+
+Either way you get a normal-looking home screen icon that opens full-screen with no browser bar. It works fully offline after the first load, and updates itself in the background the next time you open it with internet access.
+
 ## Tech
 
 Plain HTML/CSS/JS, no framework and no build step. State lives in `localStorage`; a Service Worker precaches the app shell and serves it network-first (falling back to cache when offline).
