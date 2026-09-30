@@ -114,6 +114,7 @@
     <div class="view-toggle">
       <button id="toggleWeek" data-i18n="showWeek">Woche</button>
       <button id="toggleMonth" data-i18n="showMonth">Monat</button>
+      <button id="toggleWeight" data-i18n="showWeight">Gewicht</button>
     </div>
   </div>
 
@@ -152,6 +153,31 @@
     <div class="week-toggle">
       <button id="toggleMonthToWeek" data-i18n="showWeek">Woche</button>
       <button id="toggleMonthBack" data-i18n="backToDay">Zurück zum Tag</button>
+    </div>
+  </div>
+
+  <div id="weightView" class="week-panel hidden">
+    <div class="section-title" data-i18n="weightTitle">Gewicht</div>
+
+    <div class="weight-entry-row">
+      <div class="macrocell">
+        <label class="mini" data-i18n="weightLabel">Gewicht (kg)</label>
+        <input type="number" id="weightInput" step="0.1" min="0" placeholder="0.0">
+      </div>
+      <button class="add-submit" id="weightSaveBtn" data-i18n="save">Speichern</button>
+    </div>
+
+    <div class="week-summary">
+      <div><div class="wsnum" id="weightCurrent">–</div><div class="wslabel" data-i18n="weightCurrentLabel">Aktuell</div></div>
+      <div><div class="wsnum" id="weightChange">–</div><div class="wslabel" data-i18n="weightChangeLabel">Verlauf</div></div>
+      <div><div class="wsnum" id="weightCount">0</div><div class="wslabel" data-i18n="weightCountLabel">Einträge</div></div>
+    </div>
+
+    <div id="weightChartWrap"></div>
+    <div id="weightHistory"></div>
+
+    <div class="week-toggle">
+      <button id="weightBack" data-i18n="backToDay">Zurück zum Tag</button>
     </div>
   </div>
 
@@ -367,6 +393,7 @@
 <script src="scripts/day.js"></script>
 <script src="scripts/add.js"></script>
 <script src="scripts/week-month.js"></script>
+<script src="scripts/weight.js"></script>
 <script src="scripts/settings.js"></script>
 <script src="scripts/main.js"></script>
 </body>

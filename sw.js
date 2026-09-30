@@ -1,6 +1,6 @@
 // Bump this on every deploy so the cache below gets invalidated — otherwise
 // installed phones keep serving the old cached files forever.
-const CACHE_NAME = "fuellog-v27";
+const CACHE_NAME = "fuellog-v28";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,6 +9,7 @@ const ASSETS = [
   "./scripts/day.js",
   "./scripts/add.js",
   "./scripts/week-month.js",
+  "./scripts/weight.js",
   "./scripts/settings.js",
   "./scripts/main.js",
   "./i18n/de.js",

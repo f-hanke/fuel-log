@@ -51,6 +51,7 @@ async function refreshCurrentView(){
   if(!document.getElementById('dayView').classList.contains('hidden')) await renderDay();
   if(!document.getElementById('weekView').classList.contains('hidden')) await renderWeek();
   if(!document.getElementById('monthView').classList.contains('hidden')) await renderMonth();
+  if(!document.getElementById('weightView').classList.contains('hidden')) await renderWeight();
 }
 
 // Switch the active UI language, re-render, and reflect the choice in Settings
@@ -86,6 +87,7 @@ function showView(view){
   document.getElementById('datebar').classList.toggle('hidden', view !== 'day');
   document.getElementById('weekView').classList.toggle('hidden', view !== 'week');
   document.getElementById('monthView').classList.toggle('hidden', view !== 'month');
+  document.getElementById('weightView').classList.toggle('hidden', view !== 'weight');
   document.getElementById('addView').classList.toggle('hidden', view !== 'add');
   document.getElementById('fabAdd').classList.toggle('hidden', view !== 'day');
 }
@@ -107,6 +109,12 @@ function fmtLabel(d){
   return `${t('dow')[d.getDay()]}, ${d.getDate()}. ${t('mon')[d.getMonth()]} ${d.getFullYear()}`;
 }
 function isSameDay(a,b){ return fmtKey(a)===fmtKey(b); }
+// Inverse of fmtKey: "YYYY-MM-DD" -> local Date. Deliberately not `new Date(key)` —
+// that parses as UTC and can shift the calendar day in negative-UTC-offset timezones.
+function parseDateKey(key){
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
 
 // Load all logged meals for one day from localStorage (empty array if none/corrupt)
 async function loadEntries(dateObj){
