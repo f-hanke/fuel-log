@@ -211,6 +211,13 @@ body{
 .detail-macros{
   font-family:var(--font-mono); font-size:12.5px; color:var(--ink-dim); margin-bottom:10px;
 }
+
+/* Barcode tab: live camera preview while scanning */
+#scannerWrap{margin-top:10px;}
+#scannerVideo{
+  width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:10px;
+  background:#000; border:1px solid var(--line); display:block; margin-bottom:10px;
+}
 .add-submit{
   width:100%; background:var(--lime); color:#0F1613; border:none; border-radius:8px;
   padding:11px; font-family:var(--font-body); font-weight:700; font-size:13px;
@@ -223,9 +230,9 @@ body{
   display:flex; gap:8px; margin:14px 0;
 }
 .mode-btn{
-  flex:1; background:var(--bg-panel); border:1px solid var(--line); color:var(--ink-dim);
-  font-family:var(--font-body); font-weight:600; font-size:12.5px; letter-spacing:0.2px; text-transform:uppercase;
-  padding:9px; border-radius:8px; cursor:pointer;
+  flex:1; min-width:0; background:var(--bg-panel); border:1px solid var(--line); color:var(--ink-dim);
+  font-family:var(--font-body); font-weight:600; font-size:11.5px; letter-spacing:0.1px; text-transform:uppercase;
+  padding:9px 4px; border-radius:8px; cursor:pointer;
 }
 .mode-btn.active{border-color:var(--lime); color:var(--lime); background:var(--bg-panel-2);}
 

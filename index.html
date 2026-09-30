@@ -173,6 +173,7 @@
 
     <div class="mode-toggle">
       <button class="mode-btn active" id="addModeSearch" data-i18n="addModeSearch">Suche</button>
+      <button class="mode-btn" id="addModeBarcode" data-i18n="addModeBarcode">Barcode</button>
       <button class="mode-btn" id="addModeQuick" data-i18n="addModeQuick">Schnelleingabe</button>
     </div>
 
@@ -182,6 +183,16 @@
         <button class="add-submit search-go" id="searchBtn" data-i18n="searchBtn">Suchen</button>
       </div>
       <div id="searchResults"></div>
+    </div>
+
+    <div id="addBarcodeTab" class="hidden">
+      <button class="add-submit" id="scanBtn" data-i18n="scanBtn">Barcode scannen</button>
+      <div id="scannerWrap" class="hidden">
+        <video id="scannerVideo" playsinline muted autoplay></video>
+        <button class="mode-btn" id="scanCancelBtn" data-i18n="cancel">Abbrechen</button>
+      </div>
+      <div id="barcodeStatus" class="search-hint"></div>
+      <div id="barcodeResults"></div>
     </div>
 
     <div id="addQuickTab" class="hidden">
@@ -349,6 +360,7 @@
   </div>
 </div>
 
+<script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
 <script src="i18n/de.js"></script>
 <script src="i18n/en.js"></script>
 <script src="scripts/state.js"></script>
