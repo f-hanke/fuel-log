@@ -23,12 +23,47 @@ function categoryOf(entry){
   return MEAL_CATEGORIES[entry.category] ? entry.category : 'snacks';
 }
 
+// Header week strip: shows the whole Mon-Sun week currentDate falls in, highlights
+// the selected day, and marks today separately (in case it isn't the selected day)
+function renderDateBar(){
+  document.getElementById('dateText').textContent = fmtLabel(currentDate);
+  document.getElementById('todayTag').classList.toggle('hidden', !isSameDay(currentDate, new Date()));
+
+  const dow = currentDate.getDay(); // 0=So, 1=Mo, ... 6=Sa
+  const diffToMonday = (dow === 0 ? -6 : 1 - dow);
+  const monday = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + diffToMonday);
+
+  const stripEl = document.getElementById('weekStripDays');
+  stripEl.innerHTML = '';
+  const today = new Date();
+  for(let i=0; i<7; i++){
+    const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+    const isSelected = isSameDay(d, currentDate);
+    const isToday = isSameDay(d, today);
+    const cell = document.createElement('button');
+    cell.className = 'ws-day' + (isSelected ? ' selected' : '') + (isToday ? ' is-today' : '');
+    cell.innerHTML = `<span class="ws-dow">${t('dow')[d.getDay()]}</span><span class="ws-num">${d.getDate()}</span>`;
+    cell.addEventListener('click', () => {
+      currentDate = new Date(d);
+      renderDay();
+    });
+    stripEl.appendChild(cell);
+  }
+}
+document.getElementById('prevWeekNav').addEventListener('click', ()=>{
+  currentDate = new Date(currentDate.getTime() - 7*86400000);
+  renderDay();
+});
+document.getElementById('nextWeekNav').addEventListener('click', ()=>{
+  currentDate = new Date(currentDate.getTime() + 7*86400000);
+  renderDay();
+});
+
 // Main day-view render: loads the day's entries, updates the macro stat tiles/rings
 // and rebuilds each category's meal list. Called on load, day navigation, add,
 // edit and delete.
 async function renderDay(){
-  document.getElementById('dateText').textContent = fmtLabel(currentDate);
-  document.getElementById('todayTag').classList.toggle('hidden', !isSameDay(currentDate, new Date()));
+  renderDateBar();
 
   currentEntries = await loadEntries(currentDate);
   const totals = sumEntries(currentEntries);
@@ -153,14 +188,5 @@ document.getElementById('editSaveBtn').addEventListener('click', async ()=>{
   };
   await saveEntries(currentDate, currentEntries);
   closeEditModal();
-  renderDay();
-});
-
-document.getElementById('prevDay').addEventListener('click', ()=>{
-  currentDate = new Date(currentDate.getTime() - 86400000);
-  renderDay();
-});
-document.getElementById('nextDay').addEventListener('click', ()=>{
-  currentDate = new Date(currentDate.getTime() + 86400000);
   renderDay();
 });

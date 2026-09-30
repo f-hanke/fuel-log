@@ -15,7 +15,7 @@ const TRANSLATIONS_DE = {
   cameraError: 'Kamera nicht verfügbar. Zugriff erlaubt?',
   miniKcal: 'Kcal', miniProtein: 'Protein', miniCarbs: 'Carbs', miniFat: 'Fett',
   addBtn: 'Hinzufügen', showWeek: 'Woche', showMonth: 'Monat', showWeight: 'Gewicht',
-  weightTitle: 'Gewicht', weightLabel: 'Gewicht (kg)',
+  weightTitle: 'Gewicht', weightLabel: 'Gewicht (kg)', weightDateLabel: 'Datum',
   weightCurrentLabel: 'Aktuell', weightChangeLabel: 'Verlauf', weightCountLabel: 'Einträge',
   weightEmpty: 'Noch kein Gewicht erfasst.',
   wsKcalAvg: 'Ø kcal/Tag', wsProteinAvg: 'Ø Protein/Tag', wsDaysLogged: 'Tage geloggt',

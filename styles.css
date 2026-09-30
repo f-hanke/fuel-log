@@ -80,6 +80,45 @@ body{
 }
 .datebar .spacer{width:34px;}
 
+/* Day view header: a full week strip instead of single-day prev/next arrows —
+   shows the whole Mon-Sun week, highlights the selected day (and marks today
+   even when it isn't the selected day), and the ‹/› buttons page by a whole
+   week instead of one day at a time. */
+.daybar{
+  background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
+  padding:12px 14px; margin-bottom:16px;
+}
+.dateline{
+  text-align:center; font-family:var(--font-body); font-weight:600; font-size:14px;
+  letter-spacing:0.2px; margin-bottom:10px;
+}
+.dateline .today-tag{
+  color:var(--lime); font-family:var(--font-mono); font-weight:600; font-size:10px;
+  letter-spacing:1px; display:block; margin-top:3px;
+}
+.weekstrip{display:flex; align-items:center; gap:4px;}
+.weekstrip button{
+  background:none; border:none; color:var(--ink-dim); font-size:18px; cursor:pointer;
+  padding:4px 6px; border-radius:6px; flex-shrink:0;
+}
+.weekstrip button:hover{color:var(--lime); background:var(--bg-panel-2);}
+.weekstrip-days{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; flex:1; min-width:0;}
+.ws-day{
+  background:var(--bg-panel-2); border:1px solid var(--line); border-radius:8px; color:var(--ink);
+  padding:6px 2px; display:flex; flex-direction:column; align-items:center; gap:2px;
+  cursor:pointer; min-width:0;
+}
+.ws-day:hover{border-color:var(--lime);}
+.ws-day .ws-dow{
+  font-family:var(--font-body); font-weight:600; font-size:9px; color:var(--ink-dim);
+  text-transform:uppercase; letter-spacing:0.3px;
+}
+.ws-day .ws-num{font-family:var(--font-display); font-weight:800; font-size:14px;}
+.ws-day.selected{background:var(--lime); border-color:var(--lime);}
+.ws-day.selected .ws-dow, .ws-day.selected .ws-num{color:#0F1613;}
+.ws-day.is-today:not(.selected){border-color:var(--lime);}
+.ws-day.is-today:not(.selected) .ws-num{color:var(--lime);}
+
 .ring-row{
   display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;
 }
@@ -177,12 +216,25 @@ body{
    weight page alike — kept generic instead of re-scoped per container */
 .row{display:flex; gap:8px; margin:14px 0 8px;}
 .macrow{margin-bottom:14px;}
-input[type="text"], input[type="number"], input[type="email"], select{
+input[type="text"], input[type="number"], input[type="email"], input[type="date"], select{
   background:var(--bg-panel-2); border:1px solid var(--line); border-radius:7px;
   color:var(--ink); padding:9px 10px; font-family:var(--font-body); font-size:14px;
   width:100%; outline:none;
 }
 input:focus, select:focus{border-color:var(--lime);}
+/* Safari renders the native date-input text using the platform's own dark/light
+   logic, not `color` — force it via the WebKit-only pseudo-elements so it stays
+   legible against our own (possibly opposite) theme background */
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field{
+  color:var(--ink);
+}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.8);}
+:root[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{filter:none;}
 input.name-input{flex:2;}
 label.mini{
   font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim);
@@ -286,8 +338,9 @@ label.mini{
 
 .weight-row{
   display:flex; align-items:center; justify-content:space-between;
-  padding:9px 4px; border-bottom:1px solid var(--line);
+  padding:9px 4px; border-bottom:1px solid var(--line); cursor:pointer;
 }
+.weight-row:hover{background:var(--bg-panel);}
 .weight-row .wr-date{font-family:var(--font-body); font-weight:500; font-size:13px; color:var(--ink-dim);}
 .weight-row .wr-val{font-family:var(--font-mono); font-weight:600; font-size:14px;}
 .weight-row .wr-right{display:flex; align-items:center;}

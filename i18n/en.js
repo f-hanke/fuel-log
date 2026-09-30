@@ -15,7 +15,7 @@ const TRANSLATIONS_EN = {
   cameraError: 'Camera unavailable. Permission granted?',
   miniKcal: 'Kcal', miniProtein: 'Protein', miniCarbs: 'Carbs', miniFat: 'Fat',
   addBtn: 'Add', showWeek: 'Week', showMonth: 'Month', showWeight: 'Weight',
-  weightTitle: 'Weight', weightLabel: 'Weight (kg)',
+  weightTitle: 'Weight', weightLabel: 'Weight (kg)', weightDateLabel: 'Date',
   weightCurrentLabel: 'Current', weightChangeLabel: 'Change', weightCountLabel: 'Entries',
   weightEmpty: 'No weight logged yet.',
   wsKcalAvg: 'Avg kcal/day', wsProteinAvg: 'Avg protein/day', wsDaysLogged: 'Days logged',

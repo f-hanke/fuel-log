@@ -35,13 +35,16 @@
     <button class="settings-toggle" id="settingsToggle" title="Settings">⚙️</button>
   </div>
 
-  <div class="datebar" id="datebar">
-    <button id="prevDay">‹</button>
-    <div class="datelabel">
+  <div class="daybar" id="datebar">
+    <div class="dateline">
       <span id="dateText">–</span>
       <span class="today-tag hidden" id="todayTag" data-i18n="today">HEUTE</span>
     </div>
-    <button id="nextDay">›</button>
+    <div class="weekstrip">
+      <button id="prevWeekNav">‹</button>
+      <div class="weekstrip-days" id="weekStripDays"></div>
+      <button id="nextWeekNav">›</button>
+    </div>
   </div>
 
   <div id="dayView">
@@ -160,6 +163,10 @@
     <div class="section-title" data-i18n="weightTitle">Gewicht</div>
 
     <div class="weight-entry-row">
+      <div class="macrocell">
+        <label class="mini" data-i18n="weightDateLabel">Datum</label>
+        <input type="date" id="weightDateInput">
+      </div>
       <div class="macrocell">
         <label class="mini" data-i18n="weightLabel">Gewicht (kg)</label>
         <input type="number" id="weightInput" step="0.1" min="0" placeholder="0.0">
