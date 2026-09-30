@@ -198,13 +198,86 @@ function wireResultContainer(containerId, getProducts){
   });
 }
 
-// --- Suche tab: Open Food Facts text search ---
+// --- Suche tab: text search, merged from two sources ---
+// Open Food Facts covers branded/packaged products well but is weak on plain
+// raw ingredients (a search for "onion" mostly returns onion-flavored sauces
+// and snacks — OFF ranks by completeness/popularity, which favors branded
+// goods). USDA FoodData Central is the opposite: built specifically for raw/
+// generic foods (fruit, vegetables, meat, ...), no barcodes though, so it's
+// not used for the Barcode tab. Both get queried and merged here.
 let searchResults = [];
+
+// A free public-use key with modest rate limits (30 req/hour, 50/day per IP) —
+// fine for personal use. A user's own free key (instant signup, no card, see
+// https://fdc.nal.usda.gov/api-key-signup.html) can just replace this string
+// for higher limits; nothing else about the integration needs to change.
+const FDC_API_KEY = 'DEMO_KEY';
 
 function resetSearchTab(){
   document.getElementById('searchInput').value = '';
   document.getElementById('searchResults').innerHTML = '';
   searchResults = [];
+}
+
+async function fetchOffResults(query){
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=50&fields=product_name,brands,nutriments`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('off bad response');
+  const data = await res.json();
+  // Only keep products that actually have a name and a kcal/100g value —
+  // Open Food Facts entries are user-submitted and often incomplete
+  return (data.products || []).filter(
+    (p) => p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] != null
+  );
+}
+
+// Normalizes one USDA food into Open Food Facts' own product shape (product_name/
+// brands/nutriments with the same field names) so both sources can share
+// buildResultRow/scaledMacros/per100Of unchanged. Restricted to the Foundation
+// and SR Legacy datasets — USDA's actually-measured raw-ingredient data,
+// skipping its "Branded" dataset (that's what OFF already covers) and its
+// "Survey (FNDDS)" dataset (recipe/mixed-dish estimates, less precise).
+function fdcToProduct(food){
+  const nutrient = (num) => {
+    const n = food.foodNutrients.find((x) => String(x.nutrientNumber) === num);
+    return n ? n.value : null;
+  };
+  const kcal = nutrient('208');
+  if(kcal == null) return null;
+  return {
+    product_name: food.description,
+    brands: 'USDA',
+    nutriments: {
+      'energy-kcal_100g': kcal,
+      'proteins_100g': nutrient('203') || 0,
+      'carbohydrates_100g': nutrient('205') || 0,
+      'fat_100g': nutrient('204') || 0,
+    },
+  };
+}
+async function fetchFdcResults(query){
+  const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${FDC_API_KEY}&query=${encodeURIComponent(query)}&pageSize=25&dataType=Foundation,SR%20Legacy`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('fdc bad response'); // also covers a rate-limited DEMO_KEY (429)
+  const data = await res.json();
+  return (data.foods || []).map(fdcToProduct).filter(Boolean);
+}
+
+// Open Food Facts and USDA each rank their own results very differently
+// internally, so a merged list needs one consistent ranking of its own — this
+// scores by how closely a result's name matches the query, so e.g. "Onions,
+// raw" (near-exact) ranks above a long branded "Onion Rings, Zwiebel" name
+// even though both contain the query text.
+function relevanceScore(name, query){
+  const n = (name || '').toLowerCase();
+  const q = query.toLowerCase().trim();
+  if(!q) return 0;
+  if(n === q) return 100;
+  if(n.startsWith(q)) return 80 - Math.min(20, n.length - q.length);
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if(new RegExp(`\\b${escaped}\\b`).test(n)) return 60 - Math.min(30, n.length - q.length);
+  if(n.includes(q)) return 20 - Math.min(15, n.length - q.length);
+  return 0;
 }
 
 async function runSearch(){
@@ -213,28 +286,21 @@ async function runSearch(){
   if(!query){ resultsEl.innerHTML = ''; return; }
 
   resultsEl.innerHTML = `<div class="loading">${t('searching')}</div>`;
-  try{
-    // page_size is fetched larger than what's actually shown, because Open Food
-    // Facts ranks branded/packaged products (more complete data, more scans)
-    // above plain/generic ingredients — a search for a raw item like an onion
-    // can bury or entirely push out the one usable "Zwiebel" entry behind pages
-    // of onion-flavored sauces and spreads. Fetching more gives the filter below
-    // a better chance of still finding it.
-    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=50&fields=product_name,brands,nutriments`;
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('bad response');
-    const data = await res.json();
-    // Only keep products that actually have a name and a kcal/100g value —
-    // Open Food Facts entries are user-submitted and often incomplete (this is
-    // especially common for generic/unbranded ingredients, which is also why
-    // they're rare in results to begin with)
-    searchResults = (data.products || []).filter(
-      (p) => p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] != null
-    );
-    renderResultRows(resultsEl, searchResults, 'searchNoResults');
-  }catch(e){
+  const [offOutcome, fdcOutcome] = await Promise.allSettled([fetchOffResults(query), fetchFdcResults(query)]);
+
+  // Only show the error state if BOTH sources failed (e.g. no internet) — a
+  // rate-limited DEMO_KEY shouldn't take down Open Food Facts results too
+  if(offOutcome.status === 'rejected' && fdcOutcome.status === 'rejected'){
     resultsEl.innerHTML = `<div class="search-hint">${t('searchError')}</div>`;
+    return;
   }
+
+  const fdcResults = fdcOutcome.status === 'fulfilled' ? fdcOutcome.value : [];
+  const offResults = offOutcome.status === 'fulfilled' ? offOutcome.value : [];
+  searchResults = [...fdcResults, ...offResults]
+    .sort((a, b) => relevanceScore(b.product_name, query) - relevanceScore(a.product_name, query));
+
+  renderResultRows(resultsEl, searchResults, 'searchNoResults');
 }
 
 document.getElementById('searchBtn').addEventListener('click', runSearch);
