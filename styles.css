@@ -325,9 +325,6 @@ label.mini{
 .heatmap-legend .sw{width:12px; height:12px; border-radius:3px; display:inline-block;}
 
 /* Weight page */
-.weight-entry-row{display:flex; gap:8px; align-items:flex-end; margin-bottom:14px;}
-.weight-entry-row .add-submit{width:auto; flex:0 0 auto; padding:9px 16px; margin-top:0;}
-
 .weight-chart{width:100%; height:auto; display:block; margin:4px 0 6px;}
 .weight-line{fill:none; stroke:var(--lime); stroke-width:2; stroke-linejoin:round; stroke-linecap:round;}
 .weight-dot{fill:var(--bg-panel); stroke:var(--lime); stroke-width:1.5;}

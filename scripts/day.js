@@ -70,11 +70,22 @@ document.getElementById('nextWeekNav').addEventListener('click', ()=>{
 // Main day-view render: loads the day's entries, updates the macro stat tiles/rings
 // and rebuilds each category's meal list. Called on load, day navigation, add,
 // edit and delete.
+//
+// renderDateBar() (which paints the header highlight) always runs synchronously
+// first, so it's never stale — but the rest of this function awaits loadEntries(),
+// and a second call can start (e.g. tapping another day quickly) before the first
+// one's await resolves. Without a guard, the first call's now-outdated result
+// would land last and repaint the stats/meal list for the wrong day right after
+// the header had already moved on. renderToken makes a stale call bail out instead.
+let renderToken = 0;
 async function renderDay(){
+  const myToken = ++renderToken;
   stripAnchor = new Date(currentDate);
   renderDateBar();
 
-  currentEntries = await loadEntries(currentDate);
+  const entries = await loadEntries(currentDate);
+  if(myToken !== renderToken) return; // a newer renderDay() has since taken over
+  currentEntries = entries;
   const totals = sumEntries(currentEntries);
 
   // Each stat tile shows "current/target" as its main number, and its rounded-rect

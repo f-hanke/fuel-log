@@ -162,7 +162,7 @@
   <div id="weightView" class="week-panel hidden">
     <div class="section-title" data-i18n="weightTitle">Gewicht</div>
 
-    <div class="weight-entry-row">
+    <div class="row macrow">
       <div class="macrocell">
         <label class="mini" data-i18n="weightDateLabel">Datum</label>
         <input type="date" id="weightDateInput">
@@ -171,8 +171,8 @@
         <label class="mini" data-i18n="weightLabel">Gewicht (kg)</label>
         <input type="number" id="weightInput" step="0.1" min="0" placeholder="0.0">
       </div>
-      <button class="add-submit" id="weightSaveBtn" data-i18n="save">Speichern</button>
     </div>
+    <button class="add-submit" id="weightSaveBtn" data-i18n="save">Speichern</button>
 
     <div class="week-summary">
       <div><div class="wsnum" id="weightCurrent">–</div><div class="wslabel" data-i18n="weightCurrentLabel">Aktuell</div></div>
@@ -181,11 +181,12 @@
     </div>
 
     <div id="weightChartWrap"></div>
-    <div id="weightHistory"></div>
 
     <div class="week-toggle">
       <button id="weightBack" data-i18n="backToDay">Zurück zum Tag</button>
     </div>
+
+    <div id="weightHistory"></div>
   </div>
 
   <div id="addView" class="hidden">
