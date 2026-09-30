@@ -74,7 +74,9 @@ async function renderWeek(){
   listEl.innerHTML = '';
   results.forEach(r=>{
     const row = document.createElement('div');
-    row.className = 'week-day' + (isSameDay(r.date, new Date()) ? ' is-today' : '');
+    row.className = 'week-day'
+      + (isSameDay(r.date, new Date()) ? ' is-today' : '')
+      + (isSameDay(r.date, currentDate) ? ' selected' : '');
     row.innerHTML = `
       <div class="wd-label">${t('dow')[r.date.getDay()]}<span class="wd-date">${r.date.getDate()}.${r.date.getMonth()+1}.</span></div>
       <div class="wd-bar-track"><div class="wd-bar-fill" style="width:${pct(r.totals.kcal, TARGETS.kcal)}%"></div></div>

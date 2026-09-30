@@ -38,7 +38,7 @@
 body{
   margin:0; background:var(--bg); color:var(--ink);
   font-family:var(--font-body);
-  padding:0 0 calc(90px + env(safe-area-inset-bottom, 0px)) 0;
+  padding:0 0 calc(100px + env(safe-area-inset-bottom, 0px)) 0;
   -webkit-font-smoothing:antialiased;
 }
 /* Standalone PWA mode draws the app right under the phone's status bar (clock,
@@ -208,8 +208,8 @@ body{
 .fab-add{
   position:fixed; left:50%; transform:translateX(-50%);
   bottom:calc(20px + env(safe-area-inset-bottom, 0px));
-  width:56px; height:56px; border-radius:50%; background:var(--lime); color:#0F1613;
-  border:none; font-size:28px; font-weight:700; line-height:1; cursor:pointer;
+  width:68px; height:68px; border-radius:50%; background:var(--lime); color:#0F1613;
+  border:none; font-size:36px; font-weight:700; line-height:1; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   box-shadow:0 6px 18px rgba(0,0,0,0.35); z-index:60;
 }
@@ -367,7 +367,14 @@ label.mini{
 .week-day .wd-bar-track{height:6px; background:var(--bg-panel-2); border-radius:3px; overflow:hidden;}
 .week-day .wd-bar-fill{height:100%; background:var(--lime); border-radius:3px;}
 .week-day .wd-kcal{font-family:var(--font-mono); font-weight:600; font-size:13px; text-align:right;}
-.week-day.is-today .wd-label{color:var(--lime);}
+.week-day.is-today:not(.selected) .wd-label{color:var(--lime);}
+/* The day currently open in the day view (not necessarily today) gets a full
+   green row here, same idea as the selected cell in the day view's own header
+   strip — so it's visible which day you're on even while browsing the week */
+.week-day.selected{background:var(--lime); border-radius:8px;}
+.week-day.selected .wd-label, .week-day.selected .wd-kcal{color:#0F1613;}
+.week-day.selected .wd-bar-track{background:rgba(15,22,19,0.25);}
+.week-day.selected .wd-bar-fill{background:#0F1613;}
 
 .week-summary{
   display:flex; justify-content:space-between; background:var(--bg-panel);
