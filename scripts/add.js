@@ -235,10 +235,11 @@ async function fetchOffResults(query){
   const res = await fetch(url);
   if(!res.ok) throw new Error('off bad response');
   const data = await res.json();
-  // Only keep products that actually have a name and a kcal/100g value —
-  // Open Food Facts entries are user-submitted and often incomplete
+  // Only keep products that actually have a name and a positive kcal/100g
+  // value — Open Food Facts entries are user-submitted and often incomplete,
+  // and a 0 kcal entry is essentially always missing data, not a real food
   return (data.products || []).filter(
-    (p) => p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] != null
+    (p) => p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] > 0
   );
 }
 
@@ -254,7 +255,7 @@ function fdcToProduct(food){
     return n ? n.value : null;
   };
   const kcal = nutrient('208');
-  if(kcal == null) return null;
+  if(!(kcal > 0)) return null;
   return {
     product_name: food.description,
     brands: 'USDA',
@@ -363,7 +364,7 @@ async function lookupBarcode(code){
     if(!res.ok) throw new Error('bad response');
     const data = await res.json();
     const p = data.product;
-    if(data.status !== 1 || !p || !p.product_name || !p.nutriments || p.nutriments['energy-kcal_100g'] == null){
+    if(data.status !== 1 || !p || !p.product_name || !p.nutriments || !(p.nutriments['energy-kcal_100g'] > 0)){
       barcodeResults = [];
       document.getElementById('barcodeStatus').textContent = t('scanNotFound');
       return;
@@ -380,10 +381,13 @@ document.getElementById('scanBtn').addEventListener('click', startScan);
 document.getElementById('scanCancelBtn').addEventListener('click', stopScan);
 wireResultContainer('barcodeResults', () => barcodeResults);
 
-// --- Übernehmen tab: copy an entry already logged on another day ---
-// category -> its translation key, for labeling each copyable entry with
-// where it originally sat (a copy always lands in the category currently
-// selected in addCategory, which may well differ from the source's own)
+// --- Übernehmen tab: copy entries already logged on another day ---
+// Grouped by meal (breakfast/lunch/dinner/snacks), same as the day view
+// itself: each group's header shows a kcal subtotal and a + to copy the
+// whole meal in one tap, or tap the header itself to expand it and copy
+// entries individually. A copy always lands in the category currently
+// selected in addCategory, which may well differ from the source's own.
+const CATEGORY_ORDER = ['breakfast', 'lunch', 'dinner', 'snacks'];
 const CATEGORY_LABEL_KEYS = { breakfast: 'catBreakfast', lunch: 'catLunch', dinner: 'catDinner', snacks: 'catSnacks' };
 
 let copySourceEntries = [];
@@ -412,37 +416,95 @@ function renderCopyResults(){
     return;
   }
   resultsEl.innerHTML = '';
-  copySourceEntries.forEach((e, idx) => {
-    const catLabel = t(CATEGORY_LABEL_KEYS[categoryOf(e)]);
-    const row = document.createElement('div');
-    row.className = 'meal';
-    row.innerHTML = `
-      <div>
-        <div class="name">${escapeHtml(e.name || t('meal'))}</div>
-        <div class="macros">${catLabel} · P ${fmtMacro(e.protein)}g · C ${fmtMacro(e.carbs)}g · F ${fmtMacro(e.fat)}g</div>
+  // Keep each entry's index into the flat copySourceEntries array — individual
+  // copies (and the edit/delete equivalents elsewhere) always address entries
+  // that way, not by position within a single category's own sub-list
+  const withIdx = copySourceEntries.map((e, idx) => ({ ...e, idx }));
+
+  CATEGORY_ORDER.forEach((cat) => {
+    const entries = withIdx.filter((e) => categoryOf(e) === cat);
+    if(entries.length === 0) return;
+
+    const kcalTotal = entries.reduce((s, e) => s + (Number(e.kcal) || 0), 0);
+    const group = document.createElement('div');
+    group.className = 'meal-group';
+    group.innerHTML = `
+      <div class="meal-group-header copy-group-toggle" data-category="${cat}">
+        <span class="cat-name">${t(CATEGORY_LABEL_KEYS[cat])}</span>
+        <span class="cat-meta">
+          <span class="cat-kcal">${Math.round(kcalTotal)} kcal</span>
+          <button class="quick-add-btn copy-group-add" data-category="${cat}" title="${t('addBtn')}">+</button>
+          <span class="copy-group-chevron">▾</span>
+        </span>
       </div>
-      <div class="meal-right">
-        <span class="kcalval">${Math.round(e.kcal) || 0}</span>
-        <button class="quick-add-btn" data-idx="${idx}" title="${t('addBtn')}">+</button>
-      </div>
+      <div class="copy-group-entries hidden" data-category="${cat}"></div>
     `;
-    resultsEl.appendChild(row);
-  });
-  resultsEl.querySelectorAll('.quick-add-btn').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      await copyEntryToToday(Number(btn.getAttribute('data-idx')));
-      btn.textContent = '✓';
-      btn.disabled = true;
-      btn.classList.add('copied');
+    const entriesEl = group.querySelector('.copy-group-entries');
+    entries.forEach((e) => {
+      const row = document.createElement('div');
+      row.className = 'meal';
+      row.innerHTML = `
+        <div>
+          <div class="name">${escapeHtml(e.name || t('meal'))}</div>
+          <div class="macros">P ${fmtMacro(e.protein)}g · C ${fmtMacro(e.carbs)}g · F ${fmtMacro(e.fat)}g</div>
+        </div>
+        <div class="meal-right">
+          <span class="kcalval">${Math.round(e.kcal) || 0}</span>
+          <button class="quick-add-btn copy-entry-add" data-idx="${e.idx}" title="${t('addBtn')}">+</button>
+        </div>
+      `;
+      entriesEl.appendChild(row);
     });
+    resultsEl.appendChild(group);
   });
 }
 
-// Unlike addEntry(), this doesn't navigate back to the day view — copying is
-// often done a few entries at a time from the same source day, so the page
-// stays open (addBack always calls renderDay() on the way out to catch up)
-async function copyEntryToToday(idx){
-  const { category, ...rest } = copySourceEntries[idx];
+// Single delegated listener for the whole tab: a tap can mean "copy this one
+// entry", "copy this whole meal", or "expand/collapse this meal" — checked in
+// that priority order so the buttons inside a header don't also toggle it
+document.getElementById('copyResults').addEventListener('click', async (e) => {
+  const entryBtn = e.target.closest('.copy-entry-add');
+  if(entryBtn){
+    await copyEntryToToday(Number(entryBtn.getAttribute('data-idx')));
+    markCopied(entryBtn);
+    return;
+  }
+  const groupBtn = e.target.closest('.copy-group-add');
+  if(groupBtn){
+    const cat = groupBtn.getAttribute('data-category');
+    await copyGroupToToday(cat);
+    markCopied(groupBtn);
+    document.querySelectorAll(`.copy-group-entries[data-category="${cat}"] .copy-entry-add`).forEach(markCopied);
+    return;
+  }
+  const toggle = e.target.closest('.copy-group-toggle');
+  if(toggle){
+    const cat = toggle.getAttribute('data-category');
+    const entriesEl = document.querySelector(`.copy-group-entries[data-category="${cat}"]`);
+    const nowHidden = entriesEl.classList.toggle('hidden');
+    toggle.querySelector('.copy-group-chevron').textContent = nowHidden ? '▾' : '▴';
+  }
+});
+
+function markCopied(btn){
+  btn.textContent = '✓';
+  btn.disabled = true;
+  btn.classList.add('copied');
+}
+
+// Neither of these navigates back to the day view — copying is often done a
+// few entries (or a couple of whole meals) at a time from the same source
+// day, so the page stays open (addBack always calls renderDay() on the way
+// out to catch up on whatever changed while it was)
+function pushCopiedEntry(src){
+  const { category, ...rest } = src;
   currentEntries.push({ category: document.getElementById('addCategory').value, ...rest });
+}
+async function copyEntryToToday(idx){
+  pushCopiedEntry(copySourceEntries[idx]);
+  await saveEntries(currentDate, currentEntries);
+}
+async function copyGroupToToday(category){
+  copySourceEntries.filter((e) => categoryOf(e) === category).forEach(pushCopiedEntry);
   await saveEntries(currentDate, currentEntries);
 }
