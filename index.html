@@ -198,6 +198,7 @@
     <div class="mode-toggle">
       <button class="mode-btn active" id="addModeSearch" data-i18n="addModeSearch">Suche</button>
       <button class="mode-btn" id="addModeBarcode" data-i18n="addModeBarcode">Barcode</button>
+      <button class="mode-btn" id="addModeCopy" data-i18n="addModeCopy">Übernehmen</button>
       <button class="mode-btn" id="addModeQuick" data-i18n="addModeQuick">Schnelleingabe</button>
     </div>
 
@@ -217,6 +218,16 @@
       </div>
       <div id="barcodeStatus" class="search-hint"></div>
       <div id="barcodeResults"></div>
+    </div>
+
+    <div id="addCopyTab" class="hidden">
+      <div class="row">
+        <div class="macrocell">
+          <label class="mini" data-i18n="copyDateLabel">Von Datum</label>
+          <input type="date" id="copyDateInput">
+        </div>
+      </div>
+      <div id="copyResults"></div>
     </div>
 
     <div id="addQuickTab" class="hidden">

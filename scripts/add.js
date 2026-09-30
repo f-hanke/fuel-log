@@ -1,13 +1,17 @@
 // Add-food page (a full view, not a popup — opened via the floating + button
-// or by tapping a category header on the day view). Three tabs:
+// or by tapping a category header on the day view). Four tabs:
 //  - Suche: text search via the Open Food Facts API
 //  - Barcode: scans a barcode with the camera and looks the product up by code
+//  - Übernehmen: copies an entry already logged on another day (e.g. "today's
+//    lunch, same as yesterday's") onto the current one
 //  - Schnelleingabe: the original manual name + macros form
 // Suche and Barcode share the same result-row UI (renderResultRows/buildResultRow
 // below): a quick + button that adds a 100g default instantly, or tapping the
 // row expands an inline amount editor right underneath itself. Both search-like
 // tabs and the quick-entry form all end up calling addEntry() to append to
-// currentEntries (from day.js) and save the day.
+// currentEntries (from day.js), save, and return to the day view. Übernehmen
+// is the one exception — it stays open after each copy so several entries can
+// be pulled from the same source day in one go (see copyEntryToToday below).
 //
 // Suche/Barcode entries also store `grams` + `per100` (the product's per-100g
 // values) on the entry itself — day.js's edit modal uses that to let you see
@@ -24,12 +28,13 @@ function defaultCategoryByTime(){
 }
 
 // Opens the add page pre-set to the given category, always starting on the
-// search tab with all three tabs reset to a blank state
+// search tab with all four tabs reset to a blank state
 function openAddPage(category){
   document.getElementById('addCategory').value = category;
   switchAddTab('search');
   resetSearchTab();
   resetBarcodeTab();
+  resetCopyTab();
   resetQuickTab();
   showView('add');
 }
@@ -45,19 +50,25 @@ document.querySelectorAll('.meal-group-header').forEach((header)=>{
 document.getElementById('addBack').addEventListener('click', ()=>{
   stopScan();
   showView('day');
+  // Übernehmen can silently add several entries while this page stays open
+  // (see copyEntryToToday) — always refresh so none of that is stale once back
+  renderDay();
 });
 
 function switchAddTab(tab){
   document.getElementById('addModeSearch').classList.toggle('active', tab === 'search');
   document.getElementById('addModeBarcode').classList.toggle('active', tab === 'barcode');
+  document.getElementById('addModeCopy').classList.toggle('active', tab === 'copy');
   document.getElementById('addModeQuick').classList.toggle('active', tab === 'quick');
   document.getElementById('addSearchTab').classList.toggle('hidden', tab !== 'search');
   document.getElementById('addBarcodeTab').classList.toggle('hidden', tab !== 'barcode');
+  document.getElementById('addCopyTab').classList.toggle('hidden', tab !== 'copy');
   document.getElementById('addQuickTab').classList.toggle('hidden', tab !== 'quick');
   if(tab !== 'barcode') stopScan();
 }
 document.getElementById('addModeSearch').addEventListener('click', ()=> switchAddTab('search'));
 document.getElementById('addModeBarcode').addEventListener('click', ()=> switchAddTab('barcode'));
+document.getElementById('addModeCopy').addEventListener('click', ()=> switchAddTab('copy'));
 document.getElementById('addModeQuick').addEventListener('click', ()=> switchAddTab('quick'));
 
 // Shared by all three tabs: append the finished entry, persist, and return to the day view
@@ -368,3 +379,70 @@ async function lookupBarcode(code){
 document.getElementById('scanBtn').addEventListener('click', startScan);
 document.getElementById('scanCancelBtn').addEventListener('click', stopScan);
 wireResultContainer('barcodeResults', () => barcodeResults);
+
+// --- Übernehmen tab: copy an entry already logged on another day ---
+// category -> its translation key, for labeling each copyable entry with
+// where it originally sat (a copy always lands in the category currently
+// selected in addCategory, which may well differ from the source's own)
+const CATEGORY_LABEL_KEYS = { breakfast: 'catBreakfast', lunch: 'catLunch', dinner: 'catDinner', snacks: 'catSnacks' };
+
+let copySourceEntries = [];
+
+function resetCopyTab(){
+  const dateInput = document.getElementById('copyDateInput');
+  dateInput.max = fmtKey(new Date());
+  // Defaults to the day before whichever day is being added to (currentDate),
+  // not necessarily today — matters when backfilling a past day too
+  dateInput.value = fmtKey(new Date(currentDate.getTime() - 86400000));
+  loadCopySource();
+}
+
+async function loadCopySource(){
+  const dateKey = document.getElementById('copyDateInput').value;
+  if(!dateKey){ document.getElementById('copyResults').innerHTML = ''; copySourceEntries = []; return; }
+  copySourceEntries = await loadEntries(parseDateKey(dateKey));
+  renderCopyResults();
+}
+document.getElementById('copyDateInput').addEventListener('change', loadCopySource);
+
+function renderCopyResults(){
+  const resultsEl = document.getElementById('copyResults');
+  if(copySourceEntries.length === 0){
+    resultsEl.innerHTML = `<div class="search-hint">${t('copyEmpty')}</div>`;
+    return;
+  }
+  resultsEl.innerHTML = '';
+  copySourceEntries.forEach((e, idx) => {
+    const catLabel = t(CATEGORY_LABEL_KEYS[categoryOf(e)]);
+    const row = document.createElement('div');
+    row.className = 'meal';
+    row.innerHTML = `
+      <div>
+        <div class="name">${escapeHtml(e.name || t('meal'))}</div>
+        <div class="macros">${catLabel} · P ${fmtMacro(e.protein)}g · C ${fmtMacro(e.carbs)}g · F ${fmtMacro(e.fat)}g</div>
+      </div>
+      <div class="meal-right">
+        <span class="kcalval">${Math.round(e.kcal) || 0}</span>
+        <button class="quick-add-btn" data-idx="${idx}" title="${t('addBtn')}">+</button>
+      </div>
+    `;
+    resultsEl.appendChild(row);
+  });
+  resultsEl.querySelectorAll('.quick-add-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      await copyEntryToToday(Number(btn.getAttribute('data-idx')));
+      btn.textContent = '✓';
+      btn.disabled = true;
+      btn.classList.add('copied');
+    });
+  });
+}
+
+// Unlike addEntry(), this doesn't navigate back to the day view — copying is
+// often done a few entries at a time from the same source day, so the page
+// stays open (addBack always calls renderDay() on the way out to catch up)
+async function copyEntryToToday(idx){
+  const { category, ...rest } = copySourceEntries[idx];
+  currentEntries.push({ category: document.getElementById('addCategory').value, ...rest });
+  await saveEntries(currentDate, currentEntries);
+}

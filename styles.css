@@ -264,6 +264,7 @@ label.mini{
   display:flex; align-items:center; justify-content:center;
 }
 .quick-add-btn:hover{border-color:var(--lime); color:var(--lime); background:var(--bg-panel-2);}
+.quick-add-btn.copied{border-color:var(--lime); color:var(--lime); cursor:default;}
 
 /* Inline "how much did you eat" editor, expanded directly under one search
    result (never a separate section at the bottom of the page) */
@@ -291,12 +292,12 @@ label.mini{
 .add-submit:disabled{opacity:0.4; cursor:default;}
 
 .mode-toggle{
-  display:flex; gap:8px; margin:14px 0;
+  display:flex; gap:6px; margin:14px 0;
 }
 .mode-btn{
   flex:1; min-width:0; background:var(--bg-panel); border:1px solid var(--line); color:var(--ink-dim);
-  font-family:var(--font-body); font-weight:600; font-size:11.5px; letter-spacing:0.1px; text-transform:uppercase;
-  padding:9px 4px; border-radius:8px; cursor:pointer;
+  font-family:var(--font-body); font-weight:600; font-size:10.5px; letter-spacing:0; text-transform:uppercase;
+  padding:9px 2px; border-radius:8px; cursor:pointer; line-height:1.2;
 }
 .mode-btn.active{border-color:var(--lime); color:var(--lime); background:var(--bg-panel-2);}
 
