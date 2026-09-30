@@ -8,6 +8,12 @@
 // row expands an inline amount editor right underneath itself. Both search-like
 // tabs and the quick-entry form all end up calling addEntry() to append to
 // currentEntries (from day.js) and save the day.
+//
+// Suche/Barcode entries also store `grams` + `per100` (the product's per-100g
+// values) on the entry itself — day.js's edit modal uses that to let you see
+// and change the logged amount later, instead of only raw macro numbers.
+// Schnelleingabe entries have neither field, and are always edited as raw
+// numbers, since there's no underlying product to scale from.
 
 function defaultCategoryByTime(){
   const h = new Date().getHours();
@@ -88,20 +94,21 @@ document.getElementById('addConfirmBtn').addEventListener('click', async ()=>{
 // and can also be tapped to expand an inline amount editor right underneath
 // itself — never a separate section at the bottom of the page.
 
-// Scales one product's per-100g nutriments to the given gram amount. kcal is
-// rounded to a whole number; protein/carbs/fat keep up to 2 decimal places —
-// rounding those to whole grams was throwing away real precision, especially
-// for small amounts (e.g. a 10g portion of something with 2.3g fat per 100g).
-function scaledMacros(product, grams){
+// A product's per-100g nutriments, normalized to our own {kcal,protein,carbs,fat}
+// naming — this is what gets stored on the entry (as `per100`) alongside the
+// gram amount used, so day.js's edit modal can later show/change the amount
+// instead of just raw macro numbers, for anything added via Suche/Barcode.
+function per100Of(product){
   const n = product.nutriments;
-  const factor = grams / 100;
-  const round2 = (v) => Math.round(v * 100) / 100;
   return {
-    kcal: Math.round((n['energy-kcal_100g'] || 0) * factor),
-    protein: round2((n['proteins_100g'] || 0) * factor),
-    carbs: round2((n['carbohydrates_100g'] || 0) * factor),
-    fat: round2((n['fat_100g'] || 0) * factor),
+    kcal: n['energy-kcal_100g'] || 0,
+    protein: n['proteins_100g'] || 0,
+    carbs: n['carbohydrates_100g'] || 0,
+    fat: n['fat_100g'] || 0,
   };
+}
+function scaledMacros(product, grams){
+  return scaleFromPer100(per100Of(product), grams);
 }
 function macroSummary(product, grams){
   const m = scaledMacros(product, grams);
@@ -168,7 +175,7 @@ function wireResultContainer(containerId, getProducts){
     const quickBtn = e.target.closest('.quick-add-btn');
     if(quickBtn){
       const p = getProducts()[Number(quickBtn.getAttribute('data-idx'))];
-      await addEntry({ name: p.product_name, ...scaledMacros(p, 100) });
+      await addEntry({ name: p.product_name, grams: 100, per100: per100Of(p), ...scaledMacros(p, 100) });
       return;
     }
     const confirmBtn = e.target.closest('.confirm-add-btn');
@@ -176,7 +183,7 @@ function wireResultContainer(containerId, getProducts){
       const idx = Number(confirmBtn.getAttribute('data-idx'));
       const grams = Number(container.querySelector(`.grams-input[data-idx="${idx}"]`).value) || 0;
       const p = getProducts()[idx];
-      await addEntry({ name: p.product_name, ...scaledMacros(p, grams) });
+      await addEntry({ name: p.product_name, grams, per100: per100Of(p), ...scaledMacros(p, grams) });
       return;
     }
     const row = e.target.closest('.search-result');

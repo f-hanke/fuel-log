@@ -172,19 +172,49 @@ document.getElementById('deleteConfirmBtn').addEventListener('click', async ()=>
 
 let pendingEditIdx = null;
 
-// Open the edit popup for the meal at this index, pre-filled with its current values
+// An entry added via Suche/Barcode carries its product's per-100g values and
+// the amount used — that's what lets its amount be viewed/changed later,
+// instead of only raw macro numbers like a Schnelleingabe entry has.
+function isProductEntry(entry){
+  return !!(entry && entry.per100 && entry.grams != null);
+}
+
+// Open the edit popup for the meal at this index, pre-filled with its current
+// values. Shows the grams field (product entries) or the raw macro fields
+// (everything else) depending on how the entry was originally added.
 function openEditModal(idx){
   pendingEditIdx = idx;
   const entry = currentEntries[idx];
   if(!entry) return;
   document.getElementById('eCategory').value = categoryOf(entry);
   document.getElementById('eName').value = entry.name || '';
-  document.getElementById('eKcal').value = entry.kcal || '';
-  document.getElementById('eProtein').value = entry.protein || '';
-  document.getElementById('eCarbs').value = entry.carbs || '';
-  document.getElementById('eFat').value = entry.fat || '';
+
+  const isProduct = isProductEntry(entry);
+  document.getElementById('editManualFields').classList.toggle('hidden', isProduct);
+  document.getElementById('editGramsFields').classList.toggle('hidden', !isProduct);
+
+  if(isProduct){
+    document.getElementById('eGrams').value = entry.grams;
+    updateEditGramsPreview();
+  } else {
+    document.getElementById('eKcal').value = entry.kcal || '';
+    document.getElementById('eProtein').value = entry.protein || '';
+    document.getElementById('eCarbs').value = entry.carbs || '';
+    document.getElementById('eFat').value = entry.fat || '';
+  }
   document.getElementById('editModal').classList.remove('hidden');
 }
+
+// Live macro preview while adjusting a product entry's amount in the edit modal
+function updateEditGramsPreview(){
+  const entry = currentEntries[pendingEditIdx];
+  if(!isProductEntry(entry)) return;
+  const grams = Number(document.getElementById('eGrams').value) || 0;
+  const m = scaleFromPer100(entry.per100, grams);
+  document.getElementById('eGramsPreview').textContent =
+    `${m.kcal} kcal · ${fmtMacro(m.protein)}g P · ${fmtMacro(m.carbs)}g C · ${fmtMacro(m.fat)}g F`;
+}
+document.getElementById('eGrams').addEventListener('input', updateEditGramsPreview);
 
 function closeEditModal(){
   pendingEditIdx = null;
@@ -199,15 +229,25 @@ document.getElementById('editSaveBtn').addEventListener('click', async ()=>{
   if(pendingEditIdx === null) return;
   const category = document.getElementById('eCategory').value;
   const name = document.getElementById('eName').value.trim();
-  const kcal = document.getElementById('eKcal').value;
-  const protein = document.getElementById('eProtein').value;
-  const carbs = document.getElementById('eCarbs').value;
-  const fat = document.getElementById('eFat').value;
-  if(!name || !kcal){ return; }
-  currentEntries[pendingEditIdx] = {
-    category, name, kcal: Number(kcal)||0, protein: Number(protein)||0,
-    carbs: Number(carbs)||0, fat: Number(fat)||0
-  };
+  if(!name) return;
+
+  const entry = currentEntries[pendingEditIdx];
+  if(isProductEntry(entry)){
+    const grams = Number(document.getElementById('eGrams').value) || 0;
+    if(!grams) return;
+    currentEntries[pendingEditIdx] = {
+      category, name, grams, per100: entry.per100, ...scaleFromPer100(entry.per100, grams)
+    };
+  } else {
+    const kcal = document.getElementById('eKcal').value;
+    if(!kcal) return;
+    currentEntries[pendingEditIdx] = {
+      category, name, kcal: Number(kcal)||0,
+      protein: Number(document.getElementById('eProtein').value)||0,
+      carbs: Number(document.getElementById('eCarbs').value)||0,
+      fat: Number(document.getElementById('eFat').value)||0,
+    };
+  }
   await saveEntries(currentDate, currentEntries);
   closeEditModal();
   renderDay();

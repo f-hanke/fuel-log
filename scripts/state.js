@@ -157,6 +157,21 @@ function fmtMacro(val){
   return (Number(val) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
+// Scales a normalized {kcal,protein,carbs,fat} per-100g object to a gram amount.
+// Used for entries added via Suche/Barcode, which store their product's per100g
+// values so the logged amount can still be seen/changed later (day.js's edit
+// modal) — unlike Schnelleingabe entries, which only ever store the final totals.
+function scaleFromPer100(per100, grams){
+  const factor = grams / 100;
+  const round2 = (v) => Math.round(v * 100) / 100;
+  return {
+    kcal: Math.round((per100.kcal || 0) * factor),
+    protein: round2((per100.protein || 0) * factor),
+    carbs: round2((per100.carbs || 0) * factor),
+    fat: round2((per100.fat || 0) * factor),
+  };
+}
+
 // Escape user-entered meal names before inserting them as innerHTML, to avoid XSS
 function escapeHtml(str){
   const d = document.createElement('div');
