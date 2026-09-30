@@ -88,20 +88,24 @@ document.getElementById('addConfirmBtn').addEventListener('click', async ()=>{
 // and can also be tapped to expand an inline amount editor right underneath
 // itself — never a separate section at the bottom of the page.
 
-// Scales one product's per-100g nutriments to the given gram amount
+// Scales one product's per-100g nutriments to the given gram amount. kcal is
+// rounded to a whole number; protein/carbs/fat keep up to 2 decimal places —
+// rounding those to whole grams was throwing away real precision, especially
+// for small amounts (e.g. a 10g portion of something with 2.3g fat per 100g).
 function scaledMacros(product, grams){
   const n = product.nutriments;
   const factor = grams / 100;
+  const round2 = (v) => Math.round(v * 100) / 100;
   return {
     kcal: Math.round((n['energy-kcal_100g'] || 0) * factor),
-    protein: Math.round((n['proteins_100g'] || 0) * factor),
-    carbs: Math.round((n['carbohydrates_100g'] || 0) * factor),
-    fat: Math.round((n['fat_100g'] || 0) * factor),
+    protein: round2((n['proteins_100g'] || 0) * factor),
+    carbs: round2((n['carbohydrates_100g'] || 0) * factor),
+    fat: round2((n['fat_100g'] || 0) * factor),
   };
 }
 function macroSummary(product, grams){
   const m = scaledMacros(product, grams);
-  return `${m.kcal} kcal · ${m.protein}g P · ${m.carbs}g C · ${m.fat}g F`;
+  return `${m.kcal} kcal · ${fmtMacro(m.protein)}g P · ${fmtMacro(m.carbs)}g C · ${fmtMacro(m.fat)}g F`;
 }
 
 function buildResultRow(p, idx){
@@ -203,12 +207,20 @@ async function runSearch(){
 
   resultsEl.innerHTML = `<div class="loading">${t('searching')}</div>`;
   try{
-    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=20&fields=product_name,brands,nutriments`;
+    // page_size is fetched larger than what's actually shown, because Open Food
+    // Facts ranks branded/packaged products (more complete data, more scans)
+    // above plain/generic ingredients — a search for a raw item like an onion
+    // can bury or entirely push out the one usable "Zwiebel" entry behind pages
+    // of onion-flavored sauces and spreads. Fetching more gives the filter below
+    // a better chance of still finding it.
+    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=50&fields=product_name,brands,nutriments`;
     const res = await fetch(url);
     if(!res.ok) throw new Error('bad response');
     const data = await res.json();
     // Only keep products that actually have a name and a kcal/100g value —
-    // Open Food Facts entries are user-submitted and often incomplete
+    // Open Food Facts entries are user-submitted and often incomplete (this is
+    // especially common for generic/unbranded ingredients, which is also why
+    // they're rare in results to begin with)
     searchResults = (data.products || []).filter(
       (p) => p.product_name && p.nutriments && p.nutriments['energy-kcal_100g'] != null
     );

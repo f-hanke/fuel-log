@@ -150,6 +150,13 @@ function sumEntries(entries){
 // Clamp a value's percentage of a target to 0-100, for progress bar widths
 function pct(val, target){ return Math.max(0, Math.min(100, Math.round((val/target)*100))); }
 
+// Formats a macro (protein/carbs/fat) gram value with up to 2 decimal places,
+// trimming trailing zeros (12 -> "12", 12.5 -> "12.5", 12.34 -> "12.34") — kcal
+// stays whole everywhere via Math.round, this is only for the gram macros
+function fmtMacro(val){
+  return (Number(val) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
 // Escape user-entered meal names before inserting them as innerHTML, to avoid XSS
 function escapeHtml(str){
   const d = document.createElement('div');

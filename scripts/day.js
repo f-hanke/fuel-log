@@ -13,9 +13,11 @@ let currentEntries = [];
 // snaps back to showing the selected day's own week once one is picked.
 let stripAnchor = new Date(currentDate);
 
-// Fills one stat tile's "current/target" text and its rounded-rect ring outline
-function setStatTile(numId, ringId, value, target){
-  document.getElementById(numId).textContent = `${Math.round(value)}/${target}`;
+// Fills one stat tile's "current/target" text and its rounded-rect ring outline.
+// kcal stays a whole number; protein/carbs/fat show up to 2 decimal places.
+function setStatTile(numId, ringId, value, target, isGramMacro){
+  const shown = isGramMacro ? fmtMacro(value) : Math.round(value);
+  document.getElementById(numId).textContent = `${shown}/${target}`;
   document.getElementById(ringId).style.strokeDashoffset = 100 - pct(value, target);
 }
 
@@ -91,10 +93,10 @@ async function renderDay(){
   // Each stat tile shows "current/target" as its main number, and its rounded-rect
   // outline (the SVG ring-fill path) fills clockwise from 0-100% via stroke-dashoffset
   // — pathLength="100" on the path means dashoffset can be set directly as a percentage.
-  setStatTile('statKcal', 'ringKcal', totals.kcal, TARGETS.kcal);
-  setStatTile('statProtein', 'ringProtein', totals.protein, TARGETS.protein);
-  setStatTile('statCarbs', 'ringCarbs', totals.carbs, TARGETS.carbs);
-  setStatTile('statFat', 'ringFat', totals.fat, TARGETS.fat);
+  setStatTile('statKcal', 'ringKcal', totals.kcal, TARGETS.kcal, false);
+  setStatTile('statProtein', 'ringProtein', totals.protein, TARGETS.protein, true);
+  setStatTile('statCarbs', 'ringCarbs', totals.carbs, TARGETS.carbs, true);
+  setStatTile('statFat', 'ringFat', totals.fat, TARGETS.fat, true);
 
   // Group entries by category, keeping each entry's original index into
   // currentEntries — edit/delete always operate on that flat array by index.
@@ -118,7 +120,7 @@ function renderMealGroup(category, entries){
     row.innerHTML = `
       <div>
         <div class="name">${escapeHtml(e.name || t('meal'))}</div>
-        <div class="macros">P ${Math.round(e.protein)||0}g · C ${Math.round(e.carbs)||0}g · F ${Math.round(e.fat)||0}g</div>
+        <div class="macros">P ${fmtMacro(e.protein)}g · C ${fmtMacro(e.carbs)}g · F ${fmtMacro(e.fat)}g</div>
       </div>
       <div class="meal-right">
         <span class="kcalval">${Math.round(e.kcal)||0}</span>
