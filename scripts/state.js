@@ -90,6 +90,10 @@ function showView(view){
   document.getElementById('weightView').classList.toggle('hidden', view !== 'weight');
   document.getElementById('addView').classList.toggle('hidden', view !== 'add');
   document.getElementById('fabAdd').classList.toggle('hidden', view !== 'day');
+  // All views share one page-level scroll; without this, switching views while
+  // scrolled down (e.g. tapping "Gewicht" from partway down the day view) would
+  // leave the new view starting at that same scroll offset instead of its top.
+  window.scrollTo(0, 0);
 }
 
 // Jump straight to a given day (used when tapping a row/cell in week or month view)
