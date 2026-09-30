@@ -29,7 +29,12 @@
   --red: #C94B37;
 }
 
-*{box-sizing:border-box;}
+/* iOS Safari shows its own translucent gray overlay on tap by default, which
+   briefly covers whatever color a button/row actually changed to on click —
+   e.g. tapping a day in the week strip would flash green, then look like it
+   "turned gray" for a moment while that overlay faded, even though the
+   underlying selected state was already correct the whole time. */
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 body{
   margin:0; background:var(--bg); color:var(--ink);
   font-family:var(--font-body);
@@ -325,7 +330,11 @@ label.mini{
 .heatmap-legend .sw{width:12px; height:12px; border-radius:3px; display:inline-block;}
 
 /* Weight page */
-.weight-chart{width:100%; height:auto; display:block; margin:4px 0 6px;}
+.chart-box{
+  background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
+  padding:14px; margin-bottom:14px;
+}
+.weight-chart{width:100%; height:auto; display:block;}
 .weight-line{fill:none; stroke:var(--lime); stroke-width:2; stroke-linejoin:round; stroke-linecap:round;}
 .weight-dot{fill:var(--bg-panel); stroke:var(--lime); stroke-width:1.5;}
 .weight-dot-last{fill:var(--lime); stroke:none;}

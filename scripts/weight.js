@@ -5,9 +5,6 @@
 
 document.getElementById('toggleWeight').addEventListener('click', async ()=>{
   showView('weight');
-  const dateInput = document.getElementById('weightDateInput');
-  dateInput.max = fmtKey(new Date());
-  dateInput.value = fmtKey(new Date());
   await renderWeight();
 });
 document.getElementById('weightBack').addEventListener('click', ()=> showView('day'));
@@ -37,19 +34,41 @@ function deleteWeight(dateKey){
   saveWeights(loadWeights().filter((w) => w.date !== dateKey));
 }
 
-// Picking a date that already has a logged value pre-fills it, so re-opening
-// a past day acts as "edit" rather than silently overwriting it blind
-document.getElementById('weightDateInput').addEventListener('change', ()=>{
-  const dateKey = document.getElementById('weightDateInput').value;
-  const existing = loadWeights().find((w) => w.date === dateKey);
-  document.getElementById('weightInput').value = existing ? existing.weight : '';
+// The weight modal — opened either via "Gewicht eintragen" (defaults to today,
+// pre-filled if today's already logged) or by tapping a history row (that
+// day's own date + weight, for editing)
+function openWeightModal(dateKey, weight){
+  const dateInput = document.getElementById('wmDate');
+  dateInput.max = fmtKey(new Date());
+  dateInput.value = dateKey;
+  document.getElementById('wmWeight').value = weight != null ? weight : '';
+  document.getElementById('weightModal').classList.remove('hidden');
+}
+function closeWeightModal(){
+  document.getElementById('weightModal').classList.add('hidden');
+}
+document.getElementById('weightAddBtn').addEventListener('click', ()=>{
+  const todayKey = fmtKey(new Date());
+  const existing = loadWeights().find((w) => w.date === todayKey);
+  openWeightModal(todayKey, existing ? existing.weight : null);
 });
-
-document.getElementById('weightSaveBtn').addEventListener('click', async ()=>{
-  const dateKey = document.getElementById('weightDateInput').value;
-  const value = Number(document.getElementById('weightInput').value);
+// Picking a different date inside the modal pre-fills its existing value too,
+// so switching to a past day acts as "edit" rather than overwriting it blind
+document.getElementById('wmDate').addEventListener('change', ()=>{
+  const dateKey = document.getElementById('wmDate').value;
+  const existing = loadWeights().find((w) => w.date === dateKey);
+  document.getElementById('wmWeight').value = existing ? existing.weight : '';
+});
+document.getElementById('weightModalCancelBtn').addEventListener('click', closeWeightModal);
+document.getElementById('weightModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'weightModal') closeWeightModal();
+});
+document.getElementById('weightModalSaveBtn').addEventListener('click', async ()=>{
+  const dateKey = document.getElementById('wmDate').value;
+  const value = Number(document.getElementById('wmWeight').value);
   if(!dateKey || !value || value <= 0) return;
   upsertWeight(dateKey, value);
+  closeWeightModal();
   await renderWeight();
 });
 
@@ -60,8 +79,8 @@ async function renderWeight(){
   if(list.length === 0){
     document.getElementById('weightCurrent').textContent = '–';
     document.getElementById('weightChange').textContent = '–';
-    document.getElementById('weightChartWrap').innerHTML = '';
-    document.getElementById('weightHistory').innerHTML = `<div class="search-hint">${t('weightEmpty')}</div>`;
+    document.getElementById('weightChartWrap').innerHTML = `<div class="search-hint">${t('weightEmpty')}</div>`;
+    document.getElementById('weightHistory').innerHTML = '';
     return;
   }
 
@@ -71,10 +90,12 @@ async function renderWeight(){
   document.getElementById('weightChange').textContent =
     (change >= 0 ? '+' : '') + change.toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' kg';
 
-  document.getElementById('weightChartWrap').innerHTML = list.length >= 2 ? buildWeightChart(list) : '';
+  document.getElementById('weightChartWrap').innerHTML = list.length >= 2
+    ? buildWeightChart(list)
+    : `<div class="search-hint">${t('weightNeedMore')}</div>`;
 
-  // Tapping a row loads that day into the entry fields above for quick editing;
-  // the ✕ deletes it directly (stopPropagation so it doesn't also load the row)
+  // Tapping a row opens the modal pre-filled with that day for quick editing;
+  // the ✕ deletes it directly (stopPropagation so it doesn't also open the modal)
   const historyEl = document.getElementById('weightHistory');
   historyEl.innerHTML = '';
   [...list].reverse().forEach((w) => {
@@ -87,10 +108,7 @@ async function renderWeight(){
         <button class="wr-del" data-date="${w.date}" title="${t('deleteTooltip')}">✕</button>
       </span>
     `;
-    row.addEventListener('click', () => {
-      document.getElementById('weightDateInput').value = w.date;
-      document.getElementById('weightInput').value = w.weight;
-    });
+    row.addEventListener('click', () => openWeightModal(w.date, w.weight));
     historyEl.appendChild(row);
   });
   historyEl.querySelectorAll('.wr-del').forEach((btn) => {

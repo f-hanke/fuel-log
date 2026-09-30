@@ -162,25 +162,15 @@
   <div id="weightView" class="week-panel hidden">
     <div class="section-title" data-i18n="weightTitle">Gewicht</div>
 
-    <div class="row macrow">
-      <div class="macrocell">
-        <label class="mini" data-i18n="weightDateLabel">Datum</label>
-        <input type="date" id="weightDateInput">
-      </div>
-      <div class="macrocell">
-        <label class="mini" data-i18n="weightLabel">Gewicht (kg)</label>
-        <input type="number" id="weightInput" step="0.1" min="0" placeholder="0.0">
-      </div>
-    </div>
-    <button class="add-submit" id="weightSaveBtn" data-i18n="save">Speichern</button>
-
     <div class="week-summary">
       <div><div class="wsnum" id="weightCurrent">–</div><div class="wslabel" data-i18n="weightCurrentLabel">Aktuell</div></div>
       <div><div class="wsnum" id="weightChange">–</div><div class="wslabel" data-i18n="weightChangeLabel">Verlauf</div></div>
       <div><div class="wsnum" id="weightCount">0</div><div class="wslabel" data-i18n="weightCountLabel">Einträge</div></div>
     </div>
 
-    <div id="weightChartWrap"></div>
+    <div class="chart-box" id="weightChartWrap"></div>
+
+    <button class="add-submit" id="weightAddBtn" data-i18n="weightAddBtn">Gewicht eintragen</button>
 
     <div class="week-toggle">
       <button id="weightBack" data-i18n="backToDay">Zurück zum Tag</button>
@@ -303,6 +293,26 @@
     <div class="modal-actions">
       <button class="modal-btn-cancel" id="editCancelBtn" data-i18n="cancel">Abbrechen</button>
       <button class="modal-btn-confirm modal-btn-save" id="editSaveBtn" data-i18n="save">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="weightModal">
+  <div class="modal-box">
+    <div class="modal-title" data-i18n="weightTitle">Gewicht</div>
+    <div class="row macrow">
+      <div class="macrocell">
+        <label class="mini" data-i18n="weightDateLabel">Datum</label>
+        <input type="date" id="wmDate">
+      </div>
+      <div class="macrocell">
+        <label class="mini" data-i18n="weightLabel">Gewicht (kg)</label>
+        <input type="number" id="wmWeight" step="0.1" min="0" placeholder="0.0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" id="weightModalCancelBtn" data-i18n="cancel">Abbrechen</button>
+      <button class="modal-btn-confirm modal-btn-save" id="weightModalSaveBtn" data-i18n="save">Speichern</button>
     </div>
   </div>
 </div>
