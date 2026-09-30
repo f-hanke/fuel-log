@@ -87,31 +87,71 @@
 
     <div class="meal-group">
       <div class="meal-group-header" data-category="breakfast">
-        <span class="cat-name" data-i18n="catBreakfast">Frühstück</span>
-        <span class="cat-meta"><span class="cat-kcal" id="catKcalBreakfast">0 kcal</span><span class="cat-add">+</span></span>
+        <span class="cat-left">
+          <svg class="cat-ring" viewBox="0 0 36 36">
+            <circle class="cat-ring-track" cx="18" cy="18" r="15.5"/>
+            <circle class="cat-ring-fill" id="catRingBreakfast" cx="18" cy="18" r="15.5" transform="rotate(-90 18 18)"/>
+          </svg>
+          <span class="cat-name" data-i18n="catBreakfast">Frühstück</span>
+        </span>
+        <span class="cat-meta">
+          <span class="cat-kcal" id="catKcalBreakfast">0 kcal</span>
+          <button class="cat-add-btn" data-category="breakfast" title="Hinzufügen">+</button>
+          <span class="group-chevron">▾</span>
+        </span>
       </div>
-      <div id="mealListBreakfast"></div>
+      <div id="mealListBreakfast" class="hidden"></div>
     </div>
     <div class="meal-group">
       <div class="meal-group-header" data-category="lunch">
-        <span class="cat-name" data-i18n="catLunch">Mittag</span>
-        <span class="cat-meta"><span class="cat-kcal" id="catKcalLunch">0 kcal</span><span class="cat-add">+</span></span>
+        <span class="cat-left">
+          <svg class="cat-ring" viewBox="0 0 36 36">
+            <circle class="cat-ring-track" cx="18" cy="18" r="15.5"/>
+            <circle class="cat-ring-fill" id="catRingLunch" cx="18" cy="18" r="15.5" transform="rotate(-90 18 18)"/>
+          </svg>
+          <span class="cat-name" data-i18n="catLunch">Mittag</span>
+        </span>
+        <span class="cat-meta">
+          <span class="cat-kcal" id="catKcalLunch">0 kcal</span>
+          <button class="cat-add-btn" data-category="lunch" title="Hinzufügen">+</button>
+          <span class="group-chevron">▾</span>
+        </span>
       </div>
-      <div id="mealListLunch"></div>
+      <div id="mealListLunch" class="hidden"></div>
     </div>
     <div class="meal-group">
       <div class="meal-group-header" data-category="dinner">
-        <span class="cat-name" data-i18n="catDinner">Abendbrot</span>
-        <span class="cat-meta"><span class="cat-kcal" id="catKcalDinner">0 kcal</span><span class="cat-add">+</span></span>
+        <span class="cat-left">
+          <svg class="cat-ring" viewBox="0 0 36 36">
+            <circle class="cat-ring-track" cx="18" cy="18" r="15.5"/>
+            <circle class="cat-ring-fill" id="catRingDinner" cx="18" cy="18" r="15.5" transform="rotate(-90 18 18)"/>
+          </svg>
+          <span class="cat-name" data-i18n="catDinner">Abendbrot</span>
+        </span>
+        <span class="cat-meta">
+          <span class="cat-kcal" id="catKcalDinner">0 kcal</span>
+          <button class="cat-add-btn" data-category="dinner" title="Hinzufügen">+</button>
+          <span class="group-chevron">▾</span>
+        </span>
       </div>
-      <div id="mealListDinner"></div>
+      <div id="mealListDinner" class="hidden"></div>
     </div>
     <div class="meal-group">
       <div class="meal-group-header" data-category="snacks">
-        <span class="cat-name" data-i18n="catSnacks">Snacks</span>
-        <span class="cat-meta"><span class="cat-kcal" id="catKcalSnacks">0 kcal</span><span class="cat-add">+</span></span>
+        <span class="cat-left">
+          <svg class="cat-ring" viewBox="0 0 36 36">
+            <circle class="cat-ring-track" cx="18" cy="18" r="15.5"/>
+            <circle class="cat-ring-fill" id="catRingSnacks" cx="18" cy="18" r="15.5" transform="rotate(-90 18 18)"/>
+          </svg>
+          <span class="cat-name" data-i18n="catSnacks">Snacks</span>
+        </span>
+        <span class="cat-meta">
+          <span class="cat-kcal" id="catKcalSnacks">0 kcal</span>
+          <button class="cat-add-btn" data-category="snacks" title="Hinzufügen">+</button>
+          <span class="group-chevron">▾</span>
+        </span>
       </div>
-      <div id="mealListSnacks"></div>
+      <div id="mealListSnacks" class="hidden"></div>
     </div>
 
     <div class="view-toggle">

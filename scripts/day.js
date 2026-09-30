@@ -33,6 +33,21 @@ function categoryOf(entry){
   return MEAL_CATEGORIES[entry.category] ? entry.category : 'snacks';
 }
 
+// Rough, fixed split of the day's kcal target across the 4 meals — there's no
+// per-meal target setting, just this approximate breakdown, used to drive
+// each meal-group header's circular progress ring (below).
+const MEAL_KCAL_SHARE = { breakfast: 0.25, lunch: 0.35, dinner: 0.30, snacks: 0.10 };
+const CAT_RING_CIRCUMFERENCE = 2 * Math.PI * 15.5; // matches the r="15.5" on .cat-ring circles
+
+// Shows/hides one meal's entry list, flipping its header's chevron to match
+function toggleMealGroup(category){
+  const suffix = MEAL_CATEGORIES[category];
+  const listEl = document.getElementById('mealList' + suffix);
+  const header = document.querySelector(`.meal-group-header[data-category="${category}"]`);
+  const nowHidden = listEl.classList.toggle('hidden');
+  header.querySelector('.group-chevron').textContent = nowHidden ? '▾' : '▴';
+}
+
 // The 7 header-strip cells, created once and reused on every render (see
 // renderDateBar below) — each cell's own click listener reads its live date
 // from this array rather than a closure captured at creation time.
@@ -132,11 +147,17 @@ async function renderDay(){
   Object.keys(MEAL_CATEGORIES).forEach((cat) => renderMealGroup(cat, grouped[cat]));
 }
 
-// Renders one category's meal list and its kcal subtotal badge
+// Renders one category's meal list, its kcal subtotal badge, and its header's
+// circular progress ring (logged kcal vs. that meal's rough share of the day's target)
 function renderMealGroup(category, entries){
   const suffix = MEAL_CATEGORIES[category];
   const kcalTotal = entries.reduce((s, e) => s + (Number(e.kcal) || 0), 0);
   document.getElementById('catKcal' + suffix).textContent = Math.round(kcalTotal) + ' kcal';
+
+  const mealTarget = TARGETS.kcal * MEAL_KCAL_SHARE[category];
+  const ring = document.getElementById('catRing' + suffix);
+  ring.style.strokeDasharray = CAT_RING_CIRCUMFERENCE;
+  ring.style.strokeDashoffset = CAT_RING_CIRCUMFERENCE * (1 - pct(kcalTotal, mealTarget) / 100);
 
   const listEl = document.getElementById('mealList' + suffix);
   listEl.innerHTML = '';

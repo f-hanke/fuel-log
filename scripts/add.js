@@ -42,9 +42,16 @@ function openAddPage(category){
 document.getElementById('fabAdd').addEventListener('click', ()=>{
   openAddPage(defaultCategoryByTime());
 });
+// Tapping a meal's own + opens the add page pre-set to that category;
+// tapping anywhere else on the header just expands/collapses its list
 document.querySelectorAll('.meal-group-header').forEach((header)=>{
-  header.addEventListener('click', ()=>{
-    openAddPage(header.getAttribute('data-category'));
+  header.addEventListener('click', (e)=>{
+    const category = header.getAttribute('data-category');
+    if(e.target.closest('.cat-add-btn')){
+      openAddPage(category);
+    } else {
+      toggleMealGroup(category);
+    }
   });
 });
 document.getElementById('addBack').addEventListener('click', ()=>{
@@ -434,7 +441,7 @@ function renderCopyResults(){
         <span class="cat-meta">
           <span class="cat-kcal">${Math.round(kcalTotal)} kcal</span>
           <button class="quick-add-btn copy-group-add" data-category="${cat}" title="${t('addBtn')}">+</button>
-          <span class="copy-group-chevron">▾</span>
+          <span class="group-chevron">▾</span>
         </span>
       </div>
       <div class="copy-group-entries hidden" data-category="${cat}"></div>
@@ -482,7 +489,7 @@ document.getElementById('copyResults').addEventListener('click', async (e) => {
     const cat = toggle.getAttribute('data-category');
     const entriesEl = document.querySelector(`.copy-group-entries[data-category="${cat}"]`);
     const nowHidden = entriesEl.classList.toggle('hidden');
-    toggle.querySelector('.copy-group-chevron').textContent = nowHidden ? '▾' : '▴';
+    toggle.querySelector('.group-chevron').textContent = nowHidden ? '▾' : '▴';
   }
 });
 

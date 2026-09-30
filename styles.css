@@ -199,19 +199,28 @@ body{
   padding:6px 2px 8px; margin-bottom:8px; border-bottom:1px solid var(--line); cursor:pointer;
 }
 .meal-group-header:hover{border-color:var(--lime);}
+.meal-group-header .cat-left{display:flex; align-items:center; gap:8px; min-width:0;}
 .meal-group-header .cat-name{
   font-family:var(--font-body); font-weight:700; font-size:13.5px;
 }
-.meal-group-header .cat-meta{display:flex; align-items:center; gap:10px;}
+.meal-group-header .cat-meta{display:flex; align-items:center; gap:8px;}
 .meal-group-header .cat-kcal{
   font-family:var(--font-mono); font-weight:500; font-size:12px; color:var(--ink-dim);
 }
-.meal-group-header .cat-add{
-  width:20px; height:20px; border-radius:50%; border:1px solid var(--line); color:var(--ink-dim);
-  display:flex; align-items:center; justify-content:center; font-size:14px; line-height:1;
+/* Per-meal circular progress ring: how much of that meal's rough kcal budget
+   (see MEAL_KCAL_SHARE in day.js) has been logged so far — same idea as the
+   day's own kcal ring at the top, just per meal and drawn as a circle instead
+   of a rounded rectangle */
+.cat-ring{width:26px; height:26px; flex-shrink:0;}
+.cat-ring-track, .cat-ring-fill{fill:none; stroke-width:3;}
+.cat-ring-track{stroke:var(--line);}
+.cat-ring-fill{stroke:var(--lime); stroke-linecap:round; transition:stroke-dashoffset 0.4s ease;}
+.cat-add-btn{
+  width:20px; height:20px; border-radius:50%; border:1px solid var(--line); background:none; color:var(--ink-dim);
+  display:flex; align-items:center; justify-content:center; font-size:14px; line-height:1; padding:0; cursor:pointer;
 }
-.meal-group-header:hover .cat-add{border-color:var(--lime); color:var(--lime);}
-.copy-group-chevron{color:var(--ink-dim); font-size:12px;}
+.meal-group-header:hover .cat-add-btn{border-color:var(--lime); color:var(--lime);}
+.group-chevron{color:var(--ink-dim); font-size:12px;}
 
 .fab-add{
   position:fixed; left:50%; transform:translateX(-50%);
