@@ -86,6 +86,7 @@ function showView(view){
   document.getElementById('datebar').classList.toggle('hidden', view !== 'day');
   document.getElementById('weekView').classList.toggle('hidden', view !== 'week');
   document.getElementById('monthView').classList.toggle('hidden', view !== 'month');
+  document.getElementById('addView').classList.toggle('hidden', view !== 'add');
   document.getElementById('fabAdd').classList.toggle('hidden', view !== 'day');
 }
 

@@ -155,6 +155,78 @@
     </div>
   </div>
 
+  <div id="addView" class="hidden">
+    <div class="datebar">
+      <button id="addBack">‹</button>
+      <div class="datelabel"><span data-i18n="sectionAdd">Eintrag hinzufügen</span></div>
+      <div class="spacer"></div>
+    </div>
+
+    <div class="row">
+      <select id="addCategory" class="category-select">
+        <option value="breakfast" data-i18n="catBreakfast">Frühstück</option>
+        <option value="lunch" data-i18n="catLunch">Mittag</option>
+        <option value="dinner" data-i18n="catDinner">Abendbrot</option>
+        <option value="snacks" data-i18n="catSnacks">Snacks</option>
+      </select>
+    </div>
+
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="addModeSearch" data-i18n="addModeSearch">Suche</button>
+      <button class="mode-btn" id="addModeQuick" data-i18n="addModeQuick">Schnelleingabe</button>
+    </div>
+
+    <div id="addSearchTab">
+      <div class="row">
+        <input type="text" class="name-input" id="searchInput" data-i18n-placeholder="searchPlaceholder">
+        <button class="add-submit search-go" id="searchBtn" data-i18n="searchBtn">Suchen</button>
+      </div>
+      <div id="searchResults"></div>
+
+      <div id="searchDetail" class="hidden">
+        <div class="section-title" id="searchDetailName"></div>
+        <div class="row macrow">
+          <div class="macrocell">
+            <label class="mini" data-i18n="searchAmount">Menge (g)</label>
+            <input type="number" id="searchGrams" value="100" min="1">
+          </div>
+        </div>
+        <div class="week-summary">
+          <div><div class="wsnum" id="searchKcal">0</div><div class="wslabel" data-i18n="labelKcal">kcal</div></div>
+          <div><div class="wsnum" id="searchProtein">0</div><div class="wslabel" data-i18n="labelProtein">Protein</div></div>
+          <div><div class="wsnum" id="searchCarbs">0</div><div class="wslabel" data-i18n="labelCarbs">Carbs</div></div>
+          <div><div class="wsnum" id="searchFat">0</div><div class="wslabel" data-i18n="labelFat">Fett</div></div>
+        </div>
+        <button class="add-submit" id="searchAddBtn" data-i18n="addBtn">Hinzufügen</button>
+      </div>
+    </div>
+
+    <div id="addQuickTab" class="hidden">
+      <div class="row">
+        <input type="text" class="name-input" id="aName" data-i18n-placeholder="namePlaceholder">
+      </div>
+      <div class="row macrow">
+        <div class="macrocell">
+          <label class="mini" data-i18n="miniKcal">Kcal</label>
+          <input type="number" id="aKcal" placeholder="0" min="0">
+        </div>
+        <div class="macrocell">
+          <label class="mini" data-i18n="miniProtein">Protein</label>
+          <input type="number" id="aProtein" placeholder="0" min="0">
+        </div>
+        <div class="macrocell">
+          <label class="mini" data-i18n="miniCarbs">Carbs</label>
+          <input type="number" id="aCarbs" placeholder="0" min="0">
+        </div>
+        <div class="macrocell">
+          <label class="mini" data-i18n="miniFat">Fett</label>
+          <input type="number" id="aFat" placeholder="0" min="0">
+        </div>
+      </div>
+      <button class="add-submit" id="addConfirmBtn" data-i18n="addBtn">Hinzufügen</button>
+    </div>
+  </div>
+
 </div>
 
 <div class="modal-overlay hidden" id="deleteModal">
@@ -203,45 +275,6 @@
     <div class="modal-actions">
       <button class="modal-btn-cancel" id="editCancelBtn" data-i18n="cancel">Abbrechen</button>
       <button class="modal-btn-confirm modal-btn-save" id="editSaveBtn" data-i18n="save">Speichern</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay hidden" id="addModal">
-  <div class="modal-box">
-    <div class="modal-title" data-i18n="sectionAdd">Eintrag hinzufügen</div>
-    <div class="row">
-      <select id="aCategory" class="category-select">
-        <option value="breakfast" data-i18n="catBreakfast">Frühstück</option>
-        <option value="lunch" data-i18n="catLunch">Mittag</option>
-        <option value="dinner" data-i18n="catDinner">Abendbrot</option>
-        <option value="snacks" data-i18n="catSnacks">Snacks</option>
-      </select>
-    </div>
-    <div class="row">
-      <input type="text" class="name-input" id="aName" data-i18n-placeholder="namePlaceholder">
-    </div>
-    <div class="row macrow">
-      <div class="macrocell">
-        <label class="mini" data-i18n="miniKcal">Kcal</label>
-        <input type="number" id="aKcal" placeholder="0" min="0">
-      </div>
-      <div class="macrocell">
-        <label class="mini" data-i18n="miniProtein">Protein</label>
-        <input type="number" id="aProtein" placeholder="0" min="0">
-      </div>
-      <div class="macrocell">
-        <label class="mini" data-i18n="miniCarbs">Carbs</label>
-        <input type="number" id="aCarbs" placeholder="0" min="0">
-      </div>
-      <div class="macrocell">
-        <label class="mini" data-i18n="miniFat">Fett</label>
-        <input type="number" id="aFat" placeholder="0" min="0">
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="modal-btn-cancel" id="addCancelBtn" data-i18n="cancel">Abbrechen</button>
-      <button class="modal-btn-confirm modal-btn-save" id="addConfirmBtn" data-i18n="addBtn">Hinzufügen</button>
     </div>
   </div>
 </div>
@@ -337,6 +370,7 @@
 <script src="i18n/en.js"></script>
 <script src="scripts/state.js"></script>
 <script src="scripts/day.js"></script>
+<script src="scripts/add.js"></script>
 <script src="scripts/week-month.js"></script>
 <script src="scripts/settings.js"></script>
 <script src="scripts/main.js"></script>

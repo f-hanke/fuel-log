@@ -1,6 +1,7 @@
 // Day view: rendering the stat tiles + the meal list (grouped into breakfast/
-// lunch/dinner/snacks), the add-meal modal (opened via the floating + button or
-// by tapping a category header), and the edit/delete confirmation popups.
+// lunch/dinner/snacks) and the edit/delete confirmation popups. The add-food
+// page itself (opened via the floating + button or a category header) lives
+// in add.js.
 
 let currentDate = new Date();
 let currentEntries = [];
@@ -161,57 +162,5 @@ document.getElementById('prevDay').addEventListener('click', ()=>{
 });
 document.getElementById('nextDay').addEventListener('click', ()=>{
   currentDate = new Date(currentDate.getTime() + 86400000);
-  renderDay();
-});
-
-// Add modal: opened either via the floating + button (category guessed from the
-// current time of day) or by tapping a category header (that category preset)
-function openAddModal(category){
-  document.getElementById('aCategory').value = category;
-  document.getElementById('aName').value = '';
-  document.getElementById('aKcal').value = '';
-  document.getElementById('aProtein').value = '';
-  document.getElementById('aCarbs').value = '';
-  document.getElementById('aFat').value = '';
-  document.getElementById('addModal').classList.remove('hidden');
-  document.getElementById('aName').focus();
-}
-function closeAddModal(){
-  document.getElementById('addModal').classList.add('hidden');
-}
-function defaultCategoryByTime(){
-  const h = new Date().getHours();
-  if(h < 11) return 'breakfast';
-  if(h < 15) return 'lunch';
-  if(h < 20) return 'dinner';
-  return 'snacks';
-}
-
-document.getElementById('fabAdd').addEventListener('click', ()=>{
-  openAddModal(defaultCategoryByTime());
-});
-document.querySelectorAll('.meal-group-header').forEach((header)=>{
-  header.addEventListener('click', ()=>{
-    openAddModal(header.getAttribute('data-category'));
-  });
-});
-document.getElementById('addCancelBtn').addEventListener('click', closeAddModal);
-document.getElementById('addModal').addEventListener('click', (e)=>{
-  if(e.target.id === 'addModal') closeAddModal();
-});
-document.getElementById('addConfirmBtn').addEventListener('click', async ()=>{
-  const category = document.getElementById('aCategory').value;
-  const name = document.getElementById('aName').value.trim();
-  const kcal = document.getElementById('aKcal').value;
-  const protein = document.getElementById('aProtein').value;
-  const carbs = document.getElementById('aCarbs').value;
-  const fat = document.getElementById('aFat').value;
-  if(!name || !kcal){ return; }
-  currentEntries.push({
-    category, name, kcal: Number(kcal)||0, protein: Number(protein)||0,
-    carbs: Number(carbs)||0, fat: Number(fat)||0
-  });
-  await saveEntries(currentDate, currentEntries);
-  closeAddModal();
   renderDay();
 });
