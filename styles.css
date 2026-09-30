@@ -136,34 +136,35 @@ body{
 }
 .stat{
   position:relative; min-width:0; background:var(--bg-panel); border-radius:10px;
-  padding:14px 6px; text-align:center; overflow:hidden;
+  padding:12px 4px 10px; text-align:center;
 }
-/* The rounded-rect progress outline: same idea as a circular progress ring,
-   just traced around the tile's own border instead of a circle. ring-track is
-   the always-visible dim base outline; ring-fill is drawn on top and reveals
-   itself clockwise via stroke-dashoffset (pathLength="100" lets us treat that
-   as a plain 0-100 percentage, regardless of the path's real length). */
-.stat-ring{position:absolute; inset:0; width:100%; height:100%;}
-.stat-ring path{fill:none; stroke-width:3;}
-.ring-track{stroke:var(--line);}
-.ring-fill{stroke-linecap:round; transition:stroke-dashoffset 0.4s ease;}
-.stat.kcal .ring-fill{stroke:var(--lime);}
-.stat.protein .ring-fill{stroke:var(--amber);}
-.stat.carbs .ring-fill{stroke:#5FB7E8;}
-.stat.fat .ring-fill{stroke:var(--red);}
+/* A real circular progress ring (unlike the per-meal ones in the day view's
+   own list, this one has its value centered inside it) — stat-ring-track is
+   the always-visible dim base circle; stat-ring-fill draws on top and reveals
+   itself clockwise via stroke-dashoffset, using the circle's real
+   circumference (2πr, r=27 — see STAT_RING_CIRCUMFERENCE in day.js) since
+   plain <circle> elements can't rely on the pathLength="100" shortcut used
+   elsewhere in this app (day.js's .cat-ring, week-month.js) reliably enough. */
+.stat-ring-wrap{position:relative; width:58px; height:58px; margin:0 auto;}
+.stat-ring-circle{position:absolute; inset:0; width:100%; height:100%;}
+.stat-ring-circle circle{fill:none; stroke-width:5;}
+.stat-ring-track{stroke:var(--line);}
+.stat-ring-fill{stroke-linecap:round; transition:stroke-dashoffset 0.4s ease;}
+.stat.kcal .stat-ring-fill{stroke:var(--lime);}
+.stat.protein .stat-ring-fill{stroke:var(--amber);}
+.stat.carbs .stat-ring-fill{stroke:#5FB7E8;}
+.stat.fat .stat-ring-fill{stroke:var(--red);}
 
-.stat .num, .stat .label{position:relative; z-index:1;}
-.stat .num{
-  font-family:var(--font-display); font-weight:800; font-size:16px; line-height:1.15;
-  letter-spacing:-0.2px; overflow-wrap:normal;
-  /* Plain "/" is already a valid break point on its own — break-word was
-     forcing an ugly mid-number split (e.g. "320/320" then a lone "0") even
-     when the text actually fit on one line without it. .stat's own
-     overflow:hidden is the real safety net for any truly extreme values. */
+.stat-ring-wrap .num{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:800; font-size:15px; line-height:1;
 }
 .stat .label{
   font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim);
   text-transform:uppercase; letter-spacing:0.3px; margin-top:6px;
+}
+.stat .sub{
+  font-family:var(--font-mono); font-size:10px; color:var(--ink-dim); margin-top:2px;
 }
 .stat.kcal .num{color:var(--lime);}
 .stat.protein .num{color:var(--amber);}
@@ -259,7 +260,14 @@ input[type="date"]::-webkit-datetime-edit-day-field,
 input[type="date"]::-webkit-datetime-edit-year-field{
   color:var(--ink);
 }
-input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(0.8);}
+/* The native calendar icon sits right at the field's own edge by default,
+   with barely any breathing room before the input's border — a bit of its
+   own padding plus a touch of extra right padding on the field keeps it from
+   looking like it runs into the edge */
+input[type="date"]{padding-right:6px;}
+input[type="date"]::-webkit-calendar-picker-indicator{
+  filter:invert(0.8); padding:4px; margin-right:2px;
+}
 :root[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator{filter:none;}
 input.name-input{flex:2;}
 label.mini{

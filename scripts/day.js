@@ -13,13 +13,21 @@ let currentEntries = [];
 // snaps back to showing the selected day's own week once one is picked.
 let stripAnchor = new Date(currentDate);
 
-// Fills one stat tile's "current/target" text and its rounded-rect ring outline.
-// Always whole numbers here — this is the day's overall totals/targets, so
-// decimal macro precision (shown elsewhere: meal rows, search/edit previews)
-// would just add clutter without adding anything useful at a glance.
-function setStatTile(numId, ringId, value, target){
-  document.getElementById(numId).textContent = `${Math.round(value)}/${target}`;
-  document.getElementById(ringId).style.strokeDashoffset = 100 - pct(value, target);
+// Circumference of the top stat tiles' circular rings (r=27, see .stat-ring-circle)
+const STAT_RING_CIRCUMFERENCE = 2 * Math.PI * 27;
+
+// Fills one stat tile: today's value inside the ring, target as its own line
+// below. Always whole numbers here — this is the day's overall totals/
+// targets, so decimal macro precision (shown elsewhere: meal rows, search/
+// edit previews) would just add clutter without adding anything useful at a
+// glance. Two separate lines instead of "current/target" on one also avoids
+// ever needing to cram both numbers into the same cramped line.
+function setStatTile(numId, subId, ringId, value, target){
+  document.getElementById(numId).textContent = Math.round(value);
+  document.getElementById(subId).textContent = `${t('of')} ${target}`;
+  const ring = document.getElementById(ringId);
+  ring.style.strokeDasharray = STAT_RING_CIRCUMFERENCE;
+  ring.style.strokeDashoffset = STAT_RING_CIRCUMFERENCE * (1 - pct(value, target) / 100);
 }
 
 // Meal categories: category id -> the suffix used by its list/kcal element ids
@@ -134,10 +142,10 @@ async function renderDay(){
   // Each stat tile shows "current/target" as its main number, and its rounded-rect
   // outline (the SVG ring-fill path) fills clockwise from 0-100% via stroke-dashoffset
   // — pathLength="100" on the path means dashoffset can be set directly as a percentage.
-  setStatTile('statKcal', 'ringKcal', totals.kcal, TARGETS.kcal);
-  setStatTile('statProtein', 'ringProtein', totals.protein, TARGETS.protein);
-  setStatTile('statCarbs', 'ringCarbs', totals.carbs, TARGETS.carbs);
-  setStatTile('statFat', 'ringFat', totals.fat, TARGETS.fat);
+  setStatTile('statKcal', 'statKcalSub', 'ringKcal', totals.kcal, TARGETS.kcal);
+  setStatTile('statProtein', 'statProteinSub', 'ringProtein', totals.protein, TARGETS.protein);
+  setStatTile('statCarbs', 'statCarbsSub', 'ringCarbs', totals.carbs, TARGETS.carbs);
+  setStatTile('statFat', 'statFatSub', 'ringFat', totals.fat, TARGETS.fat);
 
   // Group entries by category, keeping each entry's original index into
   // currentEntries — edit/delete always operate on that flat array by index.
