@@ -5,6 +5,13 @@
 
 let currentDate = new Date();
 let currentEntries = [];
+// Which week's Mon-Sun is shown in the header strip. Kept separate from
+// currentDate so paging the strip with ‹ › only browses which week is shown —
+// it does NOT change the viewed day. Only tapping a day cell changes
+// currentDate; stripAnchor is then re-synced to it on the next renderDay()
+// (also covers jumpToDay() from the week/month views), so the strip always
+// snaps back to showing the selected day's own week once one is picked.
+let stripAnchor = new Date(currentDate);
 
 // Fills one stat tile's "current/target" text and its rounded-rect ring outline
 function setStatTile(numId, ringId, value, target){
@@ -23,15 +30,16 @@ function categoryOf(entry){
   return MEAL_CATEGORIES[entry.category] ? entry.category : 'snacks';
 }
 
-// Header week strip: shows the whole Mon-Sun week currentDate falls in, highlights
-// the selected day, and marks today separately (in case it isn't the selected day)
+// Header week strip: shows the whole Mon-Sun week stripAnchor falls in, highlights
+// whichever cell matches currentDate (if any), and marks today separately (in
+// case it isn't the selected day, or isn't even in the currently browsed week)
 function renderDateBar(){
   document.getElementById('dateText').textContent = fmtLabel(currentDate);
   document.getElementById('todayTag').classList.toggle('hidden', !isSameDay(currentDate, new Date()));
 
-  const dow = currentDate.getDay(); // 0=So, 1=Mo, ... 6=Sa
+  const dow = stripAnchor.getDay(); // 0=So, 1=Mo, ... 6=Sa
   const diffToMonday = (dow === 0 ? -6 : 1 - dow);
-  const monday = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + diffToMonday);
+  const monday = new Date(stripAnchor.getFullYear(), stripAnchor.getMonth(), stripAnchor.getDate() + diffToMonday);
 
   const stripEl = document.getElementById('weekStripDays');
   stripEl.innerHTML = '';
@@ -51,18 +59,19 @@ function renderDateBar(){
   }
 }
 document.getElementById('prevWeekNav').addEventListener('click', ()=>{
-  currentDate = new Date(currentDate.getTime() - 7*86400000);
-  renderDay();
+  stripAnchor = new Date(stripAnchor.getTime() - 7*86400000);
+  renderDateBar();
 });
 document.getElementById('nextWeekNav').addEventListener('click', ()=>{
-  currentDate = new Date(currentDate.getTime() + 7*86400000);
-  renderDay();
+  stripAnchor = new Date(stripAnchor.getTime() + 7*86400000);
+  renderDateBar();
 });
 
 // Main day-view render: loads the day's entries, updates the macro stat tiles/rings
 // and rebuilds each category's meal list. Called on load, day navigation, add,
 // edit and delete.
 async function renderDay(){
+  stripAnchor = new Date(currentDate);
   renderDateBar();
 
   currentEntries = await loadEntries(currentDate);
