@@ -166,7 +166,7 @@ async function renderMonth(){
   legend.className = 'heatmap-legend';
   legend.innerHTML = `
     <span class="sw" style="background:var(--bg-panel);border:1px solid var(--line)"></span>${t('legendNone')}
-    <span class="sw" style="background:rgba(198,241,53,0.45)"></span>${t('legendUnder')}
+    <span class="sw" style="background:rgba(var(--lime-rgb),0.45)"></span>${t('legendUnder')}
     <span class="sw" style="background:var(--lime)"></span>${t('legendOnTarget')}
     <span class="sw" style="background:var(--amber)"></span>${t('legendOver')}
   `;

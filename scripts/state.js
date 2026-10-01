@@ -76,7 +76,7 @@ function setTheme(newTheme){
   } else {
     document.documentElement.removeAttribute('data-theme');
   }
-  document.getElementById('themeColorMeta').setAttribute('content', theme === 'light' ? '#F4F6F2' : '#0F1613');
+  document.getElementById('themeColorMeta').setAttribute('content', theme === 'light' ? '#E9ECE3' : '#0F1613');
   document.getElementById('themeDarkBtn').classList.toggle('active', theme === 'dark');
   document.getElementById('themeLightBtn').classList.toggle('active', theme === 'light');
 }

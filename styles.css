@@ -6,6 +6,7 @@
   --ink: #E9F0EC;
   --ink-dim: #8FA39A;
   --lime: #C6F135;
+  --lime-rgb: 198,241,53;
   --lime-dim: #7C9A2C;
   --amber: #F2A93B;
   --red: #E8654F;
@@ -15,18 +16,22 @@
 }
 /* Light theme: overrides the same custom properties, toggled via Settings by
    setting data-theme="light" on <html> (see the inline script in index.html
-   and setTheme() in app.js) */
+   and setTheme() in state.js). Deliberately not nearly-white-on-pure-white —
+   that read as glary/harsh — so --bg and --bg-panel sit a bit further apart
+   from paper-white, and the accent colors are a touch deeper since they need
+   to hold up against a light surface instead of a dark one. */
 :root[data-theme="light"]{
-  --bg: #F4F6F2;
-  --bg-panel: #FFFFFF;
-  --bg-panel-2: #EAEFE7;
-  --line: #D9E0D5;
-  --ink: #16211C;
-  --ink-dim: #5E6D63;
-  --lime: #7CA82A;
-  --lime-dim: #5C7A1E;
-  --amber: #B8791E;
-  --red: #C94B37;
+  --bg: #E9ECE3;
+  --bg-panel: #F6F7F2;
+  --bg-panel-2: #DFE4D6;
+  --line: #CDD3C2;
+  --ink: #1B241D;
+  --ink-dim: #5A6856;
+  --lime: #6B9124;
+  --lime-rgb: 107,145,36;
+  --lime-dim: #51701C;
+  --amber: #A66A1A;
+  --red: #BD4433;
 }
 
 /* iOS Safari shows its own translucent gray overlay on tap by default, which
@@ -380,8 +385,8 @@ label.mini{
 .preview-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-top:12px;}
 .preview-cell{aspect-ratio:1; border-radius:3px; background:var(--bg-panel-2);}
 .preview-cell.hm-blank{visibility:hidden;}
-.preview-cell.hm-low{background:rgba(198,241,53,0.18);}
-.preview-cell.hm-mid{background:rgba(198,241,53,0.45);}
+.preview-cell.hm-low{background:rgba(var(--lime-rgb),0.18);}
+.preview-cell.hm-mid{background:rgba(var(--lime-rgb),0.45);}
 .preview-cell.hm-good{background:var(--lime);}
 .preview-cell.hm-over{background:var(--amber);}
 
@@ -411,8 +416,8 @@ label.mini{
 }
 .heatmap-cell.hm-blank{visibility:hidden; cursor:default;}
 .heatmap-cell.hm-empty{background:var(--bg-panel);}
-.heatmap-cell.hm-low{background:rgba(198,241,53,0.18); color:var(--ink); border-color:transparent;}
-.heatmap-cell.hm-mid{background:rgba(198,241,53,0.45); color:var(--ink); border-color:transparent;}
+.heatmap-cell.hm-low{background:rgba(var(--lime-rgb),0.18); color:var(--ink); border-color:transparent;}
+.heatmap-cell.hm-mid{background:rgba(var(--lime-rgb),0.45); color:var(--ink); border-color:transparent;}
 .heatmap-cell.hm-good{background:var(--lime); color:#0F1613; font-weight:700; border-color:transparent;}
 .heatmap-cell.hm-over{background:var(--amber); color:#0F1613; font-weight:700; border-color:transparent;}
 .heatmap-cell.is-today{box-shadow:0 0 0 2px var(--lime) inset;}
