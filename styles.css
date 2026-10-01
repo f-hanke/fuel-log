@@ -366,6 +366,30 @@ label.mini{
   font-family:var(--font-mono); font-size:12.5px; color:var(--ink-dim); margin-top:6px;
 }
 
+/* Week preview: 7 thin bars, one per day of the current week, height = that
+   day's % of the kcal target (same idea as the week view's own per-day bars,
+   just compact enough to sit inside the preview card) */
+.preview-bars{display:flex; align-items:flex-end; gap:4px; height:36px; margin-top:12px;}
+.preview-bar{flex:1; min-height:4px; border-radius:3px; background:var(--bg-panel-2);}
+.preview-bar.has-data{background:var(--lime);}
+.preview-bar.is-today{box-shadow:0 0 0 2px var(--lime-dim) inset;}
+
+/* Month preview: a small version of the month heatmap, same color buckets
+   (hm-empty/low/mid/good/over, from heatClass() in week-month.js), just
+   without the day numbers or legend — this is a glance, not the full page */
+.preview-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-top:12px;}
+.preview-cell{aspect-ratio:1; border-radius:3px; background:var(--bg-panel-2);}
+.preview-cell.hm-blank{visibility:hidden;}
+.preview-cell.hm-low{background:rgba(198,241,53,0.18);}
+.preview-cell.hm-mid{background:rgba(198,241,53,0.45);}
+.preview-cell.hm-good{background:var(--lime);}
+.preview-cell.hm-over{background:var(--amber);}
+
+/* Weight preview: the same line-chart building block as the full weight
+   page's chart (weight-line/weight-dot-last), just a shorter, label-free
+   strip — see buildWeightSparkline() in weight.js */
+.weight-sparkline{width:100%; height:auto; display:block; margin-top:10px;}
+
 .weight-show-all{
   display:block; width:100%; margin:10px 0 0; background:none; border:1px solid var(--line); color:var(--ink-dim);
   font-family:var(--font-body); font-weight:600; font-size:12.5px; letter-spacing:0.3px; text-transform:uppercase;

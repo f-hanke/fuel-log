@@ -183,27 +183,60 @@ async function renderWeekPreview(){
   const diffToMonday = (dow === 0 ? -6 : 1 - dow);
   const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + diffToMonday);
 
-  let loggedDays = 0, kcalSum = 0;
+  const results = [];
   for(let i=0; i<7; i++){
-    const entries = await loadEntries(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i));
-    if(entries.length){ loggedDays++; kcalSum += sumEntries(entries).kcal; }
+    const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+    const entries = await loadEntries(d);
+    results.push({ date: d, totals: sumEntries(entries), logged: entries.length > 0 });
   }
-  document.getElementById('weekPreviewStats').textContent = loggedDays
-    ? `Ø ${Math.round(kcalSum / loggedDays)} kcal · ${loggedDays}/7 ${t('wsDaysLogged')}`
+  const loggedDays = results.filter((r) => r.logged);
+  const avgKcal = loggedDays.length ? Math.round(loggedDays.reduce((s, r) => s + r.totals.kcal, 0) / loggedDays.length) : 0;
+
+  document.getElementById('weekPreviewStats').textContent = loggedDays.length
+    ? `Ø ${avgKcal} kcal · ${loggedDays.length}/7 ${t('wsDaysLogged')}`
     : t('previewEmpty');
+
+  // A thin bar per day — height is that day's % of the kcal target, so the
+  // shape of the week is visible at a glance, not just the average number
+  document.getElementById('weekPreviewBars').innerHTML = results.map((r) => {
+    const h = r.logged ? Math.max(6, pct(r.totals.kcal, TARGETS.kcal)) : 4;
+    const cls = 'preview-bar' + (r.logged ? ' has-data' : '') + (isSameDay(r.date, today) ? ' is-today' : '');
+    return `<div class="${cls}" style="height:${h}%"></div>`;
+  }).join('');
 }
 
 async function renderMonthPreview(){
   const today = new Date();
   const year = today.getFullYear(), month = today.getMonth();
+  const first = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  let loggedDays = 0, kcalSum = 0;
+  const results = [];
   for(let d=1; d<=daysInMonth; d++){
-    const entries = await loadEntries(new Date(year, month, d));
-    if(entries.length){ loggedDays++; kcalSum += sumEntries(entries).kcal; }
+    const day = new Date(year, month, d);
+    const entries = await loadEntries(day);
+    results.push({ date: day, totals: sumEntries(entries), logged: entries.length > 0 });
   }
-  document.getElementById('monthPreviewStats').textContent = loggedDays
-    ? `Ø ${Math.round(kcalSum / loggedDays)} kcal · ${loggedDays}/${daysInMonth} ${t('wsDaysLogged')}`
+  const loggedDays = results.filter((r) => r.logged);
+  const avgKcal = loggedDays.length ? Math.round(loggedDays.reduce((s, r) => s + r.totals.kcal, 0) / loggedDays.length) : 0;
+
+  document.getElementById('monthPreviewStats').textContent = loggedDays.length
+    ? `Ø ${avgKcal} kcal · ${loggedDays.length}/${daysInMonth} ${t('wsDaysLogged')}`
     : t('previewEmpty');
+
+  // Same color buckets as the real heatmap (heatClass, above), just smaller
+  // and without day numbers — a glance at the month's shape, not the detail
+  const gridEl = document.getElementById('monthPreviewGrid');
+  gridEl.innerHTML = '';
+  const leadingBlanks = (first.getDay() === 0) ? 6 : first.getDay() - 1;
+  for(let i=0; i<leadingBlanks; i++){
+    const blank = document.createElement('div');
+    blank.className = 'preview-cell hm-blank';
+    gridEl.appendChild(blank);
+  }
+  results.forEach((r) => {
+    const cell = document.createElement('div');
+    cell.className = 'preview-cell ' + heatClass(r.logged, pct(r.totals.kcal, TARGETS.kcal));
+    gridEl.appendChild(cell);
+  });
 }

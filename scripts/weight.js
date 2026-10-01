@@ -144,28 +144,28 @@ async function renderWeight(){
   }
 }
 
-// Day view preview card: latest weight + change since the first entry, same
-// numbers as the weight page's own summary row, just condensed to one line
+// Day view preview card: latest weight + change since the first entry (same
+// numbers as the weight page's own summary row, condensed to one line),
+// plus a small label-free version of the same line chart
 async function renderWeightPreview(){
   const list = loadWeights();
   const statsEl = document.getElementById('weightPreviewStats');
-  if(list.length === 0){ statsEl.textContent = t('previewEmpty'); return; }
+  const chartEl = document.getElementById('weightPreviewChart');
+  if(list.length === 0){ statsEl.textContent = t('previewEmpty'); chartEl.innerHTML = ''; return; }
   const current = list[list.length - 1].weight;
   const change = current - list[0].weight;
   const changeText = (change >= 0 ? '+' : '') + change.toLocaleString(undefined, { maximumFractionDigits: 1 });
   statsEl.textContent = `${current.toLocaleString(undefined, { maximumFractionDigits: 1 })} kg · ${changeText} kg`;
+  chartEl.innerHTML = list.length >= 2 ? buildWeightSparkline(list) : '';
 }
 
-// Builds a simple SVG line chart (no library — same hand-rolled approach as
-// the ring/heatmap graphics elsewhere): points spaced by actual date, y scaled
-// between the list's min/max weight, with the most recent point highlighted
-function buildWeightChart(list){
-  const width = 300, height = 150, padTop = 10, padBottom = 10, padLeft = 34, padRight = 10;
+// Shared by buildWeightChart/buildWeightSparkline: maps each entry to an
+// {x,y} point within the given plot area, with a little vertical headroom
+// above/below the actual min/max so the line never runs flush along the top
+// or bottom edge (keeps a flat/near-flat run of weigh-ins readable too)
+function weightChartPoints(list, innerW, innerH, padLeft, padTop){
   const weights = list.map((w) => w.weight);
   const rawMin = Math.min(...weights), rawMax = Math.max(...weights);
-  // A little headroom above/below the actual min/max so the line never runs
-  // flush along a gridline — makes a flat/near-flat week of weigh-ins still
-  // readable instead of collapsing to a single edge-to-edge line
   const pad = (rawMax - rawMin) * 0.15 || 0.5;
   const minW = rawMin - pad, maxW = rawMax + pad;
   const wRange = maxW - minW;
@@ -173,12 +173,22 @@ function buildWeightChart(list){
   const dates = list.map((w) => parseDateKey(w.date).getTime());
   const minD = dates[0], maxD = dates[dates.length - 1];
   const dRange = (maxD - minD) || 1;
-  const innerW = width - padLeft - padRight, innerH = height - padTop - padBottom;
 
-  const points = list.map((w, i) => ({
+  return list.map((w, i) => ({
     x: padLeft + ((dates[i] - minD) / dRange) * innerW,
     y: padTop + innerH - ((w.weight - minW) / wRange) * innerH,
   }));
+}
+
+// Builds a simple SVG line chart (no library — same hand-rolled approach as
+// the ring/heatmap graphics elsewhere): points spaced by actual date, y scaled
+// between the list's min/max weight, with the most recent point highlighted.
+// Includes a y-axis (weight) and x-axis (date) so both scales are readable.
+function buildWeightChart(list){
+  const width = 300, height = 160, padTop = 10, padBottom = 20, padLeft = 34, padRight = 10;
+  const innerW = width - padLeft - padRight, innerH = height - padTop - padBottom;
+  const points = weightChartPoints(list, innerW, innerH, padLeft, padTop);
+
   const pointsAttr = points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
   const dots = points.map((p, i) => {
     const isLast = i === points.length - 1;
@@ -188,6 +198,10 @@ function buildWeightChart(list){
   // A handful of evenly spaced horizontal gridlines, each labeled with its
   // weight on the left — e.g. 62 / 63.3 / 64.7 / 66 kg — instead of just a
   // min/max label floating at the very top and bottom
+  const weights = list.map((w) => w.weight);
+  const rawMin = Math.min(...weights), rawMax = Math.max(...weights);
+  const wPad = (rawMax - rawMin) * 0.15 || 0.5;
+  const minW = rawMin - wPad, maxW = rawMax + wPad, wRange = maxW - minW;
   const GRID_LINES = 4;
   const grid = [];
   for(let i=0; i<GRID_LINES; i++){
@@ -200,11 +214,43 @@ function buildWeightChart(list){
     `);
   }
 
+  // A few x-axis date labels (first, last, and up to 2 evenly spaced in
+  // between) — not one per point, which would overlap once there are more
+  // than a handful of entries
+  const X_LABEL_COUNT = Math.min(4, list.length);
+  const xIndices = [...new Set(
+    Array.from({ length: X_LABEL_COUNT }, (_, i) =>
+      Math.round(i * (list.length - 1) / Math.max(1, X_LABEL_COUNT - 1))
+    )
+  )];
+  const xLabels = xIndices.map((i) => {
+    const d = parseDateKey(list[i].date);
+    const anchor = i === 0 ? 'start' : (i === list.length - 1 ? 'end' : 'middle');
+    return `<text x="${points[i].x.toFixed(1)}" y="${height - 5}" text-anchor="${anchor}" class="weight-axis-label">${d.getDate()}.${d.getMonth() + 1}.</text>`;
+  }).join('');
+
   return `
     <svg viewBox="0 0 ${width} ${height}" class="weight-chart">
       ${grid.join('')}
+      ${xLabels}
       <polyline points="${pointsAttr}" class="weight-line"/>
       ${dots}
+    </svg>
+  `;
+}
+
+// A compact, label-free version of the same chart for the day view's
+// preview card — just the line and the latest point
+function buildWeightSparkline(list){
+  const width = 300, height = 46, pad = 6;
+  const innerW = width - pad * 2, innerH = height - pad * 2;
+  const points = weightChartPoints(list, innerW, innerH, pad, pad);
+  const pointsAttr = points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+  const last = points[points.length - 1];
+  return `
+    <svg viewBox="0 0 ${width} ${height}" class="weight-sparkline">
+      <polyline points="${pointsAttr}" class="weight-line"/>
+      <circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="3" class="weight-dot-last"/>
     </svg>
   `;
 }
