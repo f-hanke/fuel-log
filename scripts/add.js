@@ -452,8 +452,9 @@ function renderCopyResults(){
         <span class="cat-name">${t(CATEGORY_LABEL_KEYS[cat])}</span>
         <span class="cat-meta">
           <span class="cat-kcal">${Math.round(kcalTotal)} kcal</span>
-          <button class="quick-add-btn copy-group-add" data-category="${cat}" title="${t('addBtn')}">+</button>
           <span class="group-chevron">▾</span>
+          <span class="cat-meta-divider"></span>
+          <button class="quick-add-btn copy-group-add" data-category="${cat}" title="${t('addBtn')}">+</button>
         </span>
       </div>
       <div class="copy-group-entries hidden" data-category="${cat}"></div>

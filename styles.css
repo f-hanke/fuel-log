@@ -222,7 +222,7 @@ body{
 .meal-group-header .cat-name{
   font-family:var(--font-body); font-weight:700; font-size:16px;
 }
-.meal-group-header .cat-meta{display:flex; align-items:center; gap:10px;}
+.meal-group-header .cat-meta{display:flex; align-items:center; gap:12px;}
 .meal-group-header .cat-kcal{
   font-family:var(--font-mono); font-weight:500; font-size:13.5px; color:var(--ink-dim);
 }
@@ -234,9 +234,16 @@ body{
 .cat-ring-track, .cat-ring-fill{fill:none; stroke-width:3;}
 .cat-ring-track{stroke:var(--line);}
 .cat-ring-fill{stroke:var(--lime); stroke-linecap:round; transition:stroke-dashoffset 0.4s ease;}
+/* A thin vertical rule between the chevron (tap = expand/collapse) and the +
+   (tap = add) — both used to sit right next to each other with nothing but a
+   10px gap between two ~25px targets, easy to fat-finger the wrong one. The
+   rule plus the bigger gap it sits in, plus the larger button below, give
+   each its own clearly separate zone instead of two targets touching. */
+.cat-meta-divider{width:1px; height:20px; background:var(--line); flex-shrink:0;}
 .cat-add-btn{
-  width:25px; height:25px; border-radius:50%; border:1px solid var(--line); background:none; color:var(--ink-dim);
-  display:flex; align-items:center; justify-content:center; font-size:17px; line-height:1; padding:0; cursor:pointer;
+  width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:none; color:var(--ink-dim);
+  display:flex; align-items:center; justify-content:center; font-size:19px; line-height:1; padding:0; cursor:pointer;
+  flex-shrink:0;
 }
 .meal-group-header:hover .cat-add-btn{border-color:var(--lime); color:var(--lime);}
 .group-chevron{color:var(--ink-dim); font-size:14px;}
@@ -302,7 +309,7 @@ label.mini{
 .search-result:hover{border-color:var(--lime);}
 .quick-add-btn{
   background:none; border:1px solid var(--line); color:var(--ink-dim); cursor:pointer;
-  width:26px; height:26px; border-radius:50%; font-size:16px; line-height:1; flex-shrink:0;
+  width:32px; height:32px; border-radius:50%; font-size:18px; line-height:1; flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
 }
 .quick-add-btn:hover{border-color:var(--lime); color:var(--lime); background:var(--bg-panel-2);}
