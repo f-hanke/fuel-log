@@ -398,24 +398,35 @@ const CATEGORY_ORDER = ['breakfast', 'lunch', 'dinner', 'snacks'];
 const CATEGORY_LABEL_KEYS = { breakfast: 'catBreakfast', lunch: 'catLunch', dinner: 'catDinner', snacks: 'catSnacks' };
 
 let copySourceEntries = [];
+// The day currently being browsed in the Übernehmen tab — stepped with ‹ ›
+// instead of a date picker, same spirit as the day view's own navigation.
+// Never allowed past today: there's nothing to copy from a day that hasn't
+// happened yet.
+let copySourceDate = new Date();
 
 function resetCopyTab(){
-  const dateInput = document.getElementById('copyDateInput');
-  dateInput.max = fmtKey(new Date());
   // Defaults to the day before whichever day is being added to (currentDate),
   // not necessarily today — matters when backfilling a past day too
-  dateInput.value = fmtKey(new Date(currentDate.getTime() - 86400000));
+  copySourceDate = new Date(currentDate.getTime() - 86400000);
   loadCopySource();
 }
 
+document.getElementById('copyPrevDay').addEventListener('click', () => {
+  copySourceDate = new Date(copySourceDate.getTime() - 86400000);
+  loadCopySource();
+});
+document.getElementById('copyNextDay').addEventListener('click', () => {
+  const next = new Date(copySourceDate.getTime() + 86400000);
+  if(fmtKey(next) > fmtKey(new Date())) return; // can't browse into the future
+  copySourceDate = next;
+  loadCopySource();
+});
+
 async function loadCopySource(){
-  const dateKey = document.getElementById('copyDateInput').value;
-  if(!dateKey){ document.getElementById('copyResults').innerHTML = ''; copySourceEntries = []; return; }
-  document.getElementById('copyDateText').textContent = fmtLabel(parseDateKey(dateKey));
-  copySourceEntries = await loadEntries(parseDateKey(dateKey));
+  document.getElementById('copyDateText').textContent = fmtLabel(copySourceDate);
+  copySourceEntries = await loadEntries(copySourceDate);
   renderCopyResults();
 }
-document.getElementById('copyDateInput').addEventListener('change', loadCopySource);
 
 function renderCopyResults(){
   const resultsEl = document.getElementById('copyResults');

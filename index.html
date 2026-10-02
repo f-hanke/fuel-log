@@ -293,12 +293,10 @@
       <div class="row">
         <div class="macrocell">
           <label class="mini" data-i18n="copyDateLabel">Von Datum</label>
-          <div class="date-field-wrap">
-            <div class="date-field-display">
-              <span class="date-field-text" id="copyDateText">–</span>
-              <svg class="date-field-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>
-            </div>
-            <input type="date" id="copyDateInput" class="date-field-native">
+          <div class="datebar">
+            <button id="copyPrevDay">‹</button>
+            <div class="datelabel"><span id="copyDateText">–</span></div>
+            <button id="copyNextDay">›</button>
           </div>
         </div>
       </div>

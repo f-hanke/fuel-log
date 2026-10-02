@@ -1,6 +1,6 @@
 // Bump this on every deploy so the cache below gets invalidated — otherwise
 // installed phones keep serving the old cached files forever.
-const CACHE_NAME = "fuellog-v50";
+const CACHE_NAME = "fuellog-v51";
 const ASSETS = [
   "./",
   "./index.html",
