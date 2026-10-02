@@ -424,6 +424,22 @@ document.getElementById('copyNextDay').addEventListener('click', () => {
 
 async function loadCopySource(){
   document.getElementById('copyDateText').textContent = fmtLabel(copySourceDate);
+
+  // Flags the source day as "Heute"/"Gestern" when it is one of those — the
+  // ‹ › stepper alone makes it easy to lose track of exactly how far back
+  // you've gone, same reasoning as the day view's own today-tag
+  const tag = document.getElementById('copyDateTag');
+  const key = fmtKey(copySourceDate);
+  if(key === fmtKey(new Date())){
+    tag.textContent = t('today');
+    tag.classList.remove('hidden');
+  } else if(key === fmtKey(new Date(Date.now() - 86400000))){
+    tag.textContent = t('yesterday');
+    tag.classList.remove('hidden');
+  } else {
+    tag.classList.add('hidden');
+  }
+
   copySourceEntries = await loadEntries(copySourceDate);
   renderCopyResults();
 }

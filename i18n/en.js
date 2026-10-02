@@ -1,7 +1,7 @@
 const TRANSLATIONS_EN = {
   dow: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
   mon: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-  brandSub: 'Nutrition Tracker', today: 'TODAY',
+  brandSub: 'Nutrition Tracker', today: 'TODAY', yesterday: 'YESTERDAY',
   labelKcal: 'kcal', labelProtein: 'Protein', labelCarbs: 'Carbs', labelFat: 'Fat',
   of: 'of',
   sectionMeals: 'Meals', sectionAdd: 'Add entry',
