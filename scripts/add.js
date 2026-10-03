@@ -7,7 +7,9 @@
 //  - Schnelleingabe: the original manual name + macros form
 // Suche and Barcode share the same result-row UI (renderResultRows/buildResultRow
 // below): a quick + button that adds a 100g default instantly, or tapping the
-// row expands an inline amount editor right underneath itself. Both search-like
+// row expands an inline amount editor right underneath itself. That editor
+// can count in grams, servings or pieces where the source knows a weight for
+// them (see gramsForUnit). Both search-like
 // tabs and the quick-entry form all end up calling addEntry() to append to
 // currentEntries (from day.js), save, and return to the day view. Übernehmen
 // is the one exception — it stays open after each copy so several entries can
@@ -133,6 +135,52 @@ function macroSummary(product, grams){
   return `${m.kcal} kcal · ${fmtMacro(m.protein)}g P · ${fmtMacro(m.carbs)}g C · ${fmtMacro(m.fat)}g F`;
 }
 
+// --- Units: grams (always), serving (from the source's serving size, e.g.
+// "1 scoop = 35 g" for protein powder), and piece (Stück, e.g. one banana).
+// The amount editor counts in the selected unit, but the entry itself always
+// stores grams, so editing and the macro maths stay exactly as they were.
+
+// Gram amount for an amount typed in a given unit. Anything missing a weight
+// for that unit just yields 0 — the unit option isn't offered in that case.
+function gramsForUnit(p, unit, amount){
+  if(unit === 'piece') return Math.round(amount * (p.pieceGrams || 0));
+  if(unit === 'serving') return Math.round(amount * (p.serving_quantity || 0));
+  return amount;
+}
+function gramsFor(container, p, idx){
+  const amount = Number(container.querySelector(`.grams-input[data-idx="${idx}"]`).value) || 0;
+  const unit = container.querySelector(`.unit-select[data-idx="${idx}"]`).value;
+  return gramsForUnit(p, unit, amount);
+}
+
+// Rebuilds the unit options for one row, keeping the current choice if it's
+// still offered. "Piece" only appears once USDA's weight is known; while it's
+// being fetched a disabled placeholder shows instead.
+function refreshUnitSelect(container, p, idx){
+  const sel = container.querySelector(`.unit-select[data-idx="${idx}"]`);
+  const prev = sel.value;
+  const opts = [`<option value="g">g</option>`];
+  if(p.serving_quantity > 0){
+    opts.push(`<option value="serving">${t('unitServing')} (${Math.round(p.serving_quantity)} g)</option>`);
+  }
+  if(p.pieceGrams > 0){
+    opts.push(`<option value="piece">${t('unitPiece')} (≈${p.pieceGrams} g)</option>`);
+  } else if(p.portionsLoading){
+    opts.push(`<option value="loading" disabled>${t('loadingPortions')}</option>`);
+  }
+  sel.innerHTML = opts.join('');
+  sel.value = [...sel.options].some((o) => o.value === prev) ? prev : 'g';
+  updateDetailPreview(container, p, idx);
+}
+
+// Shows the gram equivalent (when not already in grams) next to the macros
+function updateDetailPreview(container, p, idx){
+  const unit = container.querySelector(`.unit-select[data-idx="${idx}"]`).value;
+  const grams = gramsFor(container, p, idx);
+  const prefix = unit === 'g' ? '' : `≈ ${grams} g · `;
+  container.querySelector(`.detail-macros[data-idx="${idx}"]`).textContent = prefix + macroSummary(p, grams);
+}
+
 function buildResultRow(p, idx){
   const kcal100 = Math.round(p.nutriments['energy-kcal_100g']);
   const wrap = document.createElement('div');
@@ -151,8 +199,12 @@ function buildResultRow(p, idx){
     <div class="search-result-detail hidden" data-idx="${idx}">
       <div class="row">
         <div class="macrocell">
-          <label class="mini" data-i18n="searchAmount">Menge (g)</label>
+          <label class="mini">${t('searchAmount')}</label>
           <input type="number" class="grams-input" data-idx="${idx}" value="100" min="1">
+        </div>
+        <div class="macrocell">
+          <label class="mini">${t('searchUnit')}</label>
+          <select class="unit-select" data-idx="${idx}"><option value="g">g</option></select>
         </div>
       </div>
       <div class="detail-macros" data-idx="${idx}">${macroSummary(p, 100)}</div>
@@ -171,7 +223,8 @@ function renderResultRows(container, products, emptyKey){
 }
 
 // Expands/collapses the inline amount editor for one result within a
-// container, closing any other open one in that same container
+// container, closing any other open one in that same container. Returns
+// whether it was just opened.
 function toggleResultDetail(container, idx){
   const target = container.querySelector(`.search-result-detail[data-idx="${idx}"]`);
   const wasHidden = target.classList.contains('hidden');
@@ -182,6 +235,7 @@ function toggleResultDetail(container, idx){
     gramsInput.focus();
     gramsInput.select();
   }
+  return wasHidden;
 }
 
 // Wires the quick-add / expand / confirm / live-preview interactions for one
@@ -199,20 +253,37 @@ function wireResultContainer(containerId, getProducts){
     const confirmBtn = e.target.closest('.confirm-add-btn');
     if(confirmBtn){
       const idx = Number(confirmBtn.getAttribute('data-idx'));
-      const grams = Number(container.querySelector(`.grams-input[data-idx="${idx}"]`).value) || 0;
       const p = getProducts()[idx];
+      const grams = gramsFor(container, p, idx);
       await addEntry({ name: p.product_name, grams, per100: per100Of(p), ...scaledMacros(p, grams) });
       return;
     }
     const row = e.target.closest('.search-result');
-    if(row){ toggleResultDetail(container, Number(row.getAttribute('data-idx'))); }
+    if(row){
+      const idx = Number(row.getAttribute('data-idx'));
+      if(toggleResultDetail(container, idx)){
+        // Opening a row: show the units it has right away, then fill in the
+        // USDA piece weight once it's arrived (a no-op if already known)
+        const p = getProducts()[idx];
+        refreshUnitSelect(container, p, idx);
+        ensurePieceGrams(p).finally(() => refreshUnitSelect(container, p, idx));
+      }
+    }
   });
   container.addEventListener('input', (e) => {
     const gramsInput = e.target.closest('.grams-input');
     if(!gramsInput) return;
     const idx = Number(gramsInput.getAttribute('data-idx'));
-    const grams = Number(gramsInput.value) || 0;
-    container.querySelector(`.detail-macros[data-idx="${idx}"]`).textContent = macroSummary(getProducts()[idx], grams);
+    updateDetailPreview(container, getProducts()[idx], idx);
+  });
+  container.addEventListener('change', (e) => {
+    const unitSelect = e.target.closest('.unit-select');
+    if(!unitSelect) return;
+    // Switching unit resets the amount to something sensible for it:
+    // 100 g, or one piece/serving
+    const idx = Number(unitSelect.getAttribute('data-idx'));
+    container.querySelector(`.grams-input[data-idx="${idx}"]`).value = unitSelect.value === 'g' ? 100 : 1;
+    updateDetailPreview(container, getProducts()[idx], idx);
   });
 }
 
@@ -238,7 +309,7 @@ function resetSearchTab(){
 }
 
 async function fetchOffResults(query){
-  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=50&fields=product_name,brands,nutriments`;
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=50&fields=product_name,brands,nutriments,serving_quantity`;
   const res = await fetch(url);
   if(!res.ok) throw new Error('off bad response');
   const data = await res.json();
@@ -266,6 +337,7 @@ function fdcToProduct(food){
   return {
     product_name: food.description,
     brands: 'USDA',
+    fdcId: food.fdcId, // needed later to look up the piece weight (see ensurePieceGrams)
     nutriments: {
       'energy-kcal_100g': kcal,
       'proteins_100g': nutrient('203') || 0,
@@ -280,6 +352,33 @@ async function fetchFdcResults(query){
   if(!res.ok) throw new Error('fdc bad response'); // also covers a rate-limited DEMO_KEY (429)
   const data = await res.json();
   return (data.foods || []).map(fdcToProduct).filter(Boolean);
+}
+
+// USDA's search results don't include portion sizes, only the detail endpoint
+// does (e.g. a banana's "1 medium" = 118 g). Several portions are listed with
+// different sizes, so the median gram weight is used as the single "Stück"
+// value. Fetched lazily, only once a result's amount editor is opened, and
+// cached on the product object itself — `pieceGrams` stays undefined until
+// it's been looked up, and is null when USDA has no usable portion data.
+async function fetchFdcPieceGrams(fdcId){
+  const res = await fetch(`https://api.nal.usda.gov/fdc/v1/food/${fdcId}?api_key=${FDC_API_KEY}`);
+  if(!res.ok) throw new Error('fdc detail bad response');
+  const data = await res.json();
+  const weights = (data.foodPortions || []).map((x) => x.gramWeight).filter((g) => g > 0).sort((a, b) => a - b);
+  if(weights.length === 0) return null;
+  const mid = Math.floor(weights.length / 2);
+  return Math.round(weights.length % 2 ? weights[mid] : (weights[mid - 1] + weights[mid]) / 2);
+}
+async function ensurePieceGrams(p){
+  if(!p.fdcId || p.pieceGrams !== undefined || p.portionsLoading) return;
+  p.portionsLoading = true;
+  try{
+    p.pieceGrams = await fetchFdcPieceGrams(p.fdcId);
+  }catch(e){
+    // Leave pieceGrams undefined so the next time the row is opened it retries
+  }finally{
+    p.portionsLoading = false;
+  }
 }
 
 // Open Food Facts and USDA each rank their own results very differently

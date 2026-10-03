@@ -11,7 +11,7 @@ const TRANSLATIONS_DE = {
   copyDateLabel: 'Von Datum', copyEmpty: 'Keine Einträge an diesem Tag.',
   searchPlaceholder: 'Lebensmittel suchen…', searchBtn: 'Suchen', searching: 'Suche läuft…',
   searchError: 'Suche fehlgeschlagen. Internetverbindung prüfen.',
-  searchNoResults: 'Keine Ergebnisse gefunden.', searchAmount: 'Menge (g)',
+  searchNoResults: 'Keine Ergebnisse gefunden.', searchAmount: 'Menge', searchUnit: 'Einheit', unitServing: 'Portion', unitPiece: 'Stück', loadingPortions: 'Lade Stückgewicht…',
   scanBtn: 'Barcode scannen', scanNotFound: 'Produkt nicht gefunden.',
   cameraError: 'Kamera nicht verfügbar. Zugriff erlaubt?',
   miniKcal: 'Kcal', miniProtein: 'Protein', miniCarbs: 'Carbs', miniFat: 'Fett',
