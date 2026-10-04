@@ -247,6 +247,7 @@ function wireResultContainer(containerId, getProducts){
     const quickBtn = e.target.closest('.quick-add-btn');
     if(quickBtn){
       const p = getProducts()[Number(quickBtn.getAttribute('data-idx'))];
+      rememberProduct(p);
       await addEntry({ name: p.product_name, grams: 100, per100: per100Of(p), ...scaledMacros(p, 100) });
       return;
     }
@@ -255,6 +256,7 @@ function wireResultContainer(containerId, getProducts){
       const idx = Number(confirmBtn.getAttribute('data-idx'));
       const p = getProducts()[idx];
       const grams = gramsFor(container, p, idx);
+      rememberProduct(p);
       await addEntry({ name: p.product_name, grams, per100: per100Of(p), ...scaledMacros(p, grams) });
       return;
     }
@@ -302,10 +304,47 @@ let searchResults = [];
 // for higher limits; nothing else about the integration needs to change.
 const FDC_API_KEY = 'DEMO_KEY';
 
+// --- Recently used / scanned products ---
+// Every product that was added or scanned is remembered (newest first), so
+// it can be found again without searching — shown at the top of the Suche tab
+// when it's empty, and ranked above fresh results when it matches a search.
+const RECENT_KEY = 'fuellog:recentProducts';
+const RECENT_MAX = 10;
+
+function loadRecent(){
+  try{ return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; }catch(e){ return []; }
+}
+function productKey(p){
+  return `${p.product_name}|${p.brands || ''}`;
+}
+function rememberProduct(p){
+  // Only the fields needed to rebuild the row and scale the macros — no
+  // transient loading flags
+  const clean = {
+    product_name: p.product_name,
+    brands: p.brands,
+    fdcId: p.fdcId,
+    nutriments: p.nutriments,
+    serving_quantity: p.serving_quantity,
+    pieceGrams: p.pieceGrams,
+  };
+  const key = productKey(clean);
+  const list = [clean, ...loadRecent().filter((r) => productKey(r) !== key)].slice(0, RECENT_MAX);
+  try{ localStorage.setItem(RECENT_KEY, JSON.stringify(list)); }catch(e){}
+}
+
+// Shows the recently used products as the idle content of the Suche tab
+function showRecents(){
+  const resultsEl = document.getElementById('searchResults');
+  searchResults = loadRecent();
+  if(searchResults.length === 0){ resultsEl.innerHTML = ''; return; }
+  renderResultRows(resultsEl, searchResults, 'searchNoResults');
+  resultsEl.insertAdjacentHTML('afterbegin', `<div class="search-section-label">${t('recentLabel')}</div>`);
+}
+
 function resetSearchTab(){
   document.getElementById('searchInput').value = '';
-  document.getElementById('searchResults').innerHTML = '';
-  searchResults = [];
+  showRecents();
 }
 
 async function fetchOffResults(query){
@@ -401,7 +440,7 @@ function relevanceScore(name, query){
 async function runSearch(){
   const query = document.getElementById('searchInput').value.trim();
   const resultsEl = document.getElementById('searchResults');
-  if(!query){ resultsEl.innerHTML = ''; return; }
+  if(!query){ showRecents(); return; }
 
   resultsEl.innerHTML = `<div class="loading">${t('searching')}</div>`;
   const [offOutcome, fdcOutcome] = await Promise.allSettled([fetchOffResults(query), fetchFdcResults(query)]);
@@ -415,8 +454,16 @@ async function runSearch(){
 
   const fdcResults = fdcOutcome.status === 'fulfilled' ? fdcOutcome.value : [];
   const offResults = offOutcome.status === 'fulfilled' ? offOutcome.value : [];
-  searchResults = [...fdcResults, ...offResults]
+  // Recently used products that match the query go first, and are dropped from
+  // the fresh results so the same product doesn't appear twice
+  const recents = loadRecent()
+    .filter((r) => relevanceScore(r.product_name, query) > 0)
     .sort((a, b) => relevanceScore(b.product_name, query) - relevanceScore(a.product_name, query));
+  const recentKeys = new Set(recents.map(productKey));
+  const fresh = [...fdcResults, ...offResults]
+    .filter((p) => !recentKeys.has(productKey(p)))
+    .sort((a, b) => relevanceScore(b.product_name, query) - relevanceScore(a.product_name, query));
+  searchResults = [...recents, ...fresh];
 
   renderResultRows(resultsEl, searchResults, 'searchNoResults');
 }
@@ -476,6 +523,7 @@ async function lookupBarcode(code){
       return;
     }
     barcodeResults = [p];
+    rememberProduct(p);
     document.getElementById('barcodeStatus').textContent = '';
     renderResultRows(document.getElementById('barcodeResults'), barcodeResults, 'scanNotFound');
   }catch(e){

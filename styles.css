@@ -305,6 +305,10 @@ label.mini{
 .search-hint{
   color:var(--ink-dim); font-size:13px; text-align:center; padding:22px 10px;
 }
+.search-section-label{
+  color:var(--ink-dim); font-family:var(--mono, monospace); font-size:11px; letter-spacing:.08em;
+  text-transform:uppercase; padding:4px 4px 8px;
+}
 .search-result{cursor:pointer;}
 .search-result:hover{border-color:var(--lime);}
 .quick-add-btn{
