@@ -8,8 +8,8 @@
 // Suche and Barcode share the same result-row UI (renderResultRows/buildResultRow
 // below): a quick + button that adds a 100g default instantly, or tapping the
 // row expands an inline amount editor right underneath itself. That editor
-// can count in grams, servings or pieces where the source knows a weight for
-// them (see gramsForUnit). Both search-like
+// can count in grams or servings where the source knows a serving size (see
+// gramsForUnit). Both search-like
 // tabs and the quick-entry form all end up calling addEntry() to append to
 // currentEntries (from day.js), save, and return to the day view. Übernehmen
 // is the one exception — it stays open after each copy so several entries can
@@ -136,14 +136,13 @@ function macroSummary(product, grams){
 }
 
 // --- Units: grams (always), serving (from the source's serving size, e.g.
-// "1 scoop = 35 g" for protein powder), and piece (Stück, e.g. one banana).
+// "1 scoop = 35 g" for protein powder).
 // The amount editor counts in the selected unit, but the entry itself always
 // stores grams, so editing and the macro maths stay exactly as they were.
 
 // Gram amount for an amount typed in a given unit. Anything missing a weight
 // for that unit just yields 0 — the unit option isn't offered in that case.
 function gramsForUnit(p, unit, amount){
-  if(unit === 'piece') return Math.round(amount * (p.pieceGrams || 0));
   if(unit === 'serving') return Math.round(amount * (p.serving_quantity || 0));
   return amount;
 }
@@ -153,24 +152,14 @@ function gramsFor(container, p, idx){
   return gramsForUnit(p, unit, amount);
 }
 
-// Rebuilds the unit options for one row, keeping the current choice if it's
-// still offered. "Piece" only appears once USDA's weight is known; while it's
-// being fetched a disabled placeholder shows instead.
-function refreshUnitSelect(container, p, idx){
-  const sel = container.querySelector(`.unit-select[data-idx="${idx}"]`);
-  const prev = sel.value;
+// The unit choices for one row: grams always, plus the serving if the source
+// gives a serving size (Open Food Facts' serving_quantity)
+function unitOptionsHtml(p){
   const opts = [`<option value="g">g</option>`];
   if(p.serving_quantity > 0){
     opts.push(`<option value="serving">${t('unitServing')} (${Math.round(p.serving_quantity)} g)</option>`);
   }
-  if(p.pieceGrams > 0){
-    opts.push(`<option value="piece">${t('unitPiece')} (≈${p.pieceGrams} g)</option>`);
-  } else if(p.portionsLoading){
-    opts.push(`<option value="loading" disabled>${t('loadingPortions')}</option>`);
-  }
-  sel.innerHTML = opts.join('');
-  sel.value = [...sel.options].some((o) => o.value === prev) ? prev : 'g';
-  updateDetailPreview(container, p, idx);
+  return opts.join('');
 }
 
 // Shows the gram equivalent (when not already in grams) next to the macros
@@ -204,7 +193,7 @@ function buildResultRow(p, idx){
         </div>
         <div class="macrocell">
           <label class="mini">${t('searchUnit')}</label>
-          <select class="unit-select" data-idx="${idx}"><option value="g">g</option></select>
+          <select class="unit-select" data-idx="${idx}">${unitOptionsHtml(p)}</select>
         </div>
       </div>
       <div class="detail-macros" data-idx="${idx}">${macroSummary(p, 100)}</div>
@@ -263,13 +252,7 @@ function wireResultContainer(containerId, getProducts){
     const row = e.target.closest('.search-result');
     if(row){
       const idx = Number(row.getAttribute('data-idx'));
-      if(toggleResultDetail(container, idx)){
-        // Opening a row: show the units it has right away, then fill in the
-        // USDA piece weight once it's arrived (a no-op if already known)
-        const p = getProducts()[idx];
-        refreshUnitSelect(container, p, idx);
-        ensurePieceGrams(p).finally(() => refreshUnitSelect(container, p, idx));
-      }
+      toggleResultDetail(container, idx);
     }
   });
   container.addEventListener('input', (e) => {
@@ -282,27 +265,22 @@ function wireResultContainer(containerId, getProducts){
     const unitSelect = e.target.closest('.unit-select');
     if(!unitSelect) return;
     // Switching unit resets the amount to something sensible for it:
-    // 100 g, or one piece/serving
+    // 100 g, or one serving
     const idx = Number(unitSelect.getAttribute('data-idx'));
     container.querySelector(`.grams-input[data-idx="${idx}"]`).value = unitSelect.value === 'g' ? 100 : 1;
     updateDetailPreview(container, getProducts()[idx], idx);
   });
 }
 
-// --- Suche tab: text search, merged from two sources ---
-// Open Food Facts covers branded/packaged products well but is weak on plain
-// raw ingredients (a search for "onion" mostly returns onion-flavored sauces
-// and snacks — OFF ranks by completeness/popularity, which favors branded
-// goods). USDA FoodData Central is the opposite: built specifically for raw/
-// generic foods (fruit, vegetables, meat, ...), no barcodes though, so it's
-// not used for the Barcode tab. Both get queried and merged here.
+// --- Suche tab: text search via Open Food Facts ---
+// Open Food Facts is German-language friendly (most products are German
+// packaging with German names), so it's the only source. OFF ranks by
+// popularity, so a very short query like "Ei" is flooded by "Eis", Mayo, etc.
+// and the eggs never make the top 50. QUERY_ALIASES adds the plural form for
+// such queries, so both are searched and merged.
 let searchResults = [];
 
-// A free public-use key with modest rate limits (30 req/hour, 50/day per IP) —
-// fine for personal use. A user's own free key (instant signup, no card, see
-// https://fdc.nal.usda.gov/api-key-signup.html) can just replace this string
-// for higher limits; nothing else about the integration needs to change.
-const FDC_API_KEY = 'DEMO_KEY';
+const QUERY_ALIASES = { ei: ['eier'] };
 
 // --- Recently used / scanned products ---
 // Every product that was added or scanned is remembered (newest first), so
@@ -312,7 +290,8 @@ const RECENT_KEY = 'fuellog:recentProducts';
 const RECENT_MAX = 10;
 
 function loadRecent(){
-  try{ return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; }catch(e){ return []; }
+  // Entries saved before USDA was removed are dropped (they carry an fdcId)
+  try{ return (JSON.parse(localStorage.getItem(RECENT_KEY)) || []).filter((r) => !r.fdcId); }catch(e){ return []; }
 }
 function productKey(p){
   return `${p.product_name}|${p.brands || ''}`;
@@ -323,10 +302,8 @@ function rememberProduct(p){
   const clean = {
     product_name: p.product_name,
     brands: p.brands,
-    fdcId: p.fdcId,
     nutriments: p.nutriments,
     serving_quantity: p.serving_quantity,
-    pieceGrams: p.pieceGrams,
   };
   const key = productKey(clean);
   const list = [clean, ...loadRecent().filter((r) => productKey(r) !== key)].slice(0, RECENT_MAX);
@@ -349,9 +326,20 @@ function resetSearchTab(){
 
 async function fetchOffResults(query){
   const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=50&fields=product_name,brands,nutriments,serving_quantity`;
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('off bad response');
-  const data = await res.json();
+  const getJson = async () => {
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('off bad response');
+    return res.json();
+  };
+  // Open Food Facts occasionally answers 503 for a moment (and such an error
+  // response comes without CORS headers, so the browser reports it as a failed
+  // fetch) — one retry after a short pause covers that
+  let data;
+  try{ data = await getJson(); }
+  catch(e){
+    await new Promise((r) => setTimeout(r, 800));
+    data = await getJson();
+  }
   // Only keep products that actually have a name and a positive kcal/100g
   // value — Open Food Facts entries are user-submitted and often incomplete,
   // and a 0 kcal entry is essentially always missing data, not a real food
@@ -360,71 +348,9 @@ async function fetchOffResults(query){
   );
 }
 
-// Normalizes one USDA food into Open Food Facts' own product shape (product_name/
-// brands/nutriments with the same field names) so both sources can share
-// buildResultRow/scaledMacros/per100Of unchanged. Restricted to the Foundation
-// and SR Legacy datasets — USDA's actually-measured raw-ingredient data,
-// skipping its "Branded" dataset (that's what OFF already covers) and its
-// "Survey (FNDDS)" dataset (recipe/mixed-dish estimates, less precise).
-function fdcToProduct(food){
-  const nutrient = (num) => {
-    const n = food.foodNutrients.find((x) => String(x.nutrientNumber) === num);
-    return n ? n.value : null;
-  };
-  const kcal = nutrient('208');
-  if(!(kcal > 0)) return null;
-  return {
-    product_name: food.description,
-    brands: 'USDA',
-    fdcId: food.fdcId, // needed later to look up the piece weight (see ensurePieceGrams)
-    nutriments: {
-      'energy-kcal_100g': kcal,
-      'proteins_100g': nutrient('203') || 0,
-      'carbohydrates_100g': nutrient('205') || 0,
-      'fat_100g': nutrient('204') || 0,
-    },
-  };
-}
-async function fetchFdcResults(query){
-  const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${FDC_API_KEY}&query=${encodeURIComponent(query)}&pageSize=25&dataType=Foundation,SR%20Legacy`;
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('fdc bad response'); // also covers a rate-limited DEMO_KEY (429)
-  const data = await res.json();
-  return (data.foods || []).map(fdcToProduct).filter(Boolean);
-}
-
-// USDA's search results don't include portion sizes, only the detail endpoint
-// does (e.g. a banana's "1 medium" = 118 g). Several portions are listed with
-// different sizes, so the median gram weight is used as the single "Stück"
-// value. Fetched lazily, only once a result's amount editor is opened, and
-// cached on the product object itself — `pieceGrams` stays undefined until
-// it's been looked up, and is null when USDA has no usable portion data.
-async function fetchFdcPieceGrams(fdcId){
-  const res = await fetch(`https://api.nal.usda.gov/fdc/v1/food/${fdcId}?api_key=${FDC_API_KEY}`);
-  if(!res.ok) throw new Error('fdc detail bad response');
-  const data = await res.json();
-  const weights = (data.foodPortions || []).map((x) => x.gramWeight).filter((g) => g > 0).sort((a, b) => a - b);
-  if(weights.length === 0) return null;
-  const mid = Math.floor(weights.length / 2);
-  return Math.round(weights.length % 2 ? weights[mid] : (weights[mid - 1] + weights[mid]) / 2);
-}
-async function ensurePieceGrams(p){
-  if(!p.fdcId || p.pieceGrams !== undefined || p.portionsLoading) return;
-  p.portionsLoading = true;
-  try{
-    p.pieceGrams = await fetchFdcPieceGrams(p.fdcId);
-  }catch(e){
-    // Leave pieceGrams undefined so the next time the row is opened it retries
-  }finally{
-    p.portionsLoading = false;
-  }
-}
-
-// Open Food Facts and USDA each rank their own results very differently
-// internally, so a merged list needs one consistent ranking of its own — this
-// scores by how closely a result's name matches the query, so e.g. "Onions,
-// raw" (near-exact) ranks above a long branded "Onion Rings, Zwiebel" name
-// even though both contain the query text.
+// Open Food Facts ranks by popularity, not by how well a name matches the query,
+// so this re-scores results by name: "Eier" (starts with "ei") ranks above a
+// long name that only contains "ei" somewhere inside.
 function relevanceScore(name, query){
   const n = (name || '').toLowerCase();
   const q = query.toLowerCase().trim();
@@ -443,26 +369,40 @@ async function runSearch(){
   if(!query){ showRecents(); return; }
 
   resultsEl.innerHTML = `<div class="loading">${t('searching')}</div>`;
-  const [offOutcome, fdcOutcome] = await Promise.allSettled([fetchOffResults(query), fetchFdcResults(query)]);
-
-  // Only show the error state if BOTH sources failed (e.g. no internet) — a
-  // rate-limited DEMO_KEY shouldn't take down Open Food Facts results too
-  if(offOutcome.status === 'rejected' && fdcOutcome.status === 'rejected'){
+  const terms = [query, ...(QUERY_ALIASES[query.toLowerCase()] || [])];
+  const outcomes = await Promise.allSettled(terms.map(fetchOffResults));
+  if(outcomes.every((o) => o.status === 'rejected')){
     resultsEl.innerHTML = `<div class="search-hint">${t('searchError')}</div>`;
     return;
   }
 
-  const fdcResults = fdcOutcome.status === 'fulfilled' ? fdcOutcome.value : [];
-  const offResults = offOutcome.status === 'fulfilled' ? offOutcome.value : [];
+  // Merge the query's own results with its aliases', dropping duplicates. Alias
+  // hits get a small ranking boost: for "Ei" the plural results are what's meant,
+  // and a name like "Eis" would otherwise rank just above "Eier" by letter count.
+  const seen = new Set();
+  const boosted = new Set();
+  const offResults = [];
+  outcomes.forEach((o, i) => {
+    if(o.status !== 'fulfilled') return;
+    o.value.forEach((p) => {
+      const key = productKey(p);
+      if(seen.has(key)) return;
+      seen.add(key);
+      if(i > 0) boosted.add(key);
+      offResults.push(p);
+    });
+  });
+  const score = (p) => relevanceScore(p.product_name, query) + (boosted.has(productKey(p)) ? 10 : 0);
+
   // Recently used products that match the query go first, and are dropped from
   // the fresh results so the same product doesn't appear twice
   const recents = loadRecent()
     .filter((r) => relevanceScore(r.product_name, query) > 0)
     .sort((a, b) => relevanceScore(b.product_name, query) - relevanceScore(a.product_name, query));
   const recentKeys = new Set(recents.map(productKey));
-  const fresh = [...fdcResults, ...offResults]
+  const fresh = offResults
     .filter((p) => !recentKeys.has(productKey(p)))
-    .sort((a, b) => relevanceScore(b.product_name, query) - relevanceScore(a.product_name, query));
+    .sort((a, b) => score(b) - score(a));
   searchResults = [...recents, ...fresh];
 
   renderResultRows(resultsEl, searchResults, 'searchNoResults');

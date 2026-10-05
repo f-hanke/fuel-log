@@ -11,7 +11,7 @@ const TRANSLATIONS_EN = {
   copyDateLabel: 'From date', copyEmpty: 'No entries on that day.',
   searchPlaceholder: 'Search for food…', searchBtn: 'Search', searching: 'Searching…',
   searchError: 'Search failed. Check your internet connection.',
-  searchNoResults: 'No results found.', searchAmount: 'Amount', searchUnit: 'Unit', unitServing: 'Serving', unitPiece: 'Piece', loadingPortions: 'Loading piece weight…', recentLabel: 'Recently used',
+  searchNoResults: 'No results found.', searchAmount: 'Amount', searchUnit: 'Unit', unitServing: 'Serving', recentLabel: 'Recently used',
   scanBtn: 'Scan barcode', scanNotFound: 'Product not found.',
   cameraError: 'Camera unavailable. Permission granted?',
   miniKcal: 'Kcal', miniProtein: 'Protein', miniCarbs: 'Carbs', miniFat: 'Fat',
