@@ -12,6 +12,8 @@ const TRANSLATIONS_EN = {
   searchPlaceholder: 'Search for food…', searchBtn: 'Search', searching: 'Searching…',
   searchError: 'Search failed. Check your internet connection.',
   searchNoResults: 'No results found.', searchAmount: 'Amount', searchUnit: 'Unit', unitServing: 'Serving', recentLabel: 'Recently used',
+  dashTitle: 'Day overview', dashByMeal: 'Calories by meal', dashByMacro: 'Energy by macro',
+  kcalLeft: 'left', kcalOver: 'over target',
   scanBtn: 'Scan barcode', scanNotFound: 'Product not found.',
   cameraError: 'Camera unavailable. Permission granted?',
   miniKcal: 'Kcal', miniProtein: 'Protein', miniCarbs: 'Carbs', miniFat: 'Fat',

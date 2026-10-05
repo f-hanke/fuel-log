@@ -12,6 +12,8 @@ const TRANSLATIONS_DE = {
   searchPlaceholder: 'Lebensmittel suchen…', searchBtn: 'Suchen', searching: 'Suche läuft…',
   searchError: 'Suche fehlgeschlagen. Internetverbindung prüfen.',
   searchNoResults: 'Keine Ergebnisse gefunden.', searchAmount: 'Menge', searchUnit: 'Einheit', unitServing: 'Portion', recentLabel: 'Zuletzt verwendet',
+  dashTitle: 'Tagesübersicht', dashByMeal: 'Kalorien nach Mahlzeit', dashByMacro: 'Energie nach Makro',
+  kcalLeft: 'übrig', kcalOver: 'über Ziel',
   scanBtn: 'Barcode scannen', scanNotFound: 'Produkt nicht gefunden.',
   cameraError: 'Kamera nicht verfügbar. Zugriff erlaubt?',
   miniKcal: 'Kcal', miniProtein: 'Protein', miniCarbs: 'Carbs', miniFat: 'Fett',

@@ -148,6 +148,43 @@ body{
 .ring-row{
   display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;
 }
+.macro-row{grid-template-columns:repeat(3, 1fr);}
+/* The day's calorie target as the headline of the page: a large ring with the
+   number inside, and the target and remaining kcal beside it */
+.kcal-hero{
+  display:flex; align-items:center; gap:18px; margin-bottom:12px;
+  background:var(--bg-panel); border:1px solid var(--line); border-radius:16px; padding:16px 18px;
+}
+.kcal-hero .stat-ring-wrap{width:124px; height:124px; margin:0; flex-shrink:0;}
+.kcal-hero .stat-ring-circle circle{stroke-width:4;}
+.kcal-hero .stat-ring-fill{stroke:var(--lime);}
+.kcal-hero .stat-ring-wrap .num{font-size:30px; color:var(--lime);}
+.kcal-hero-info{min-width:0; flex:1;}
+.kcal-hero-label{
+  font-family:var(--font-body); font-weight:700; font-size:12px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--ink-dim);
+}
+.kcal-hero-target{font-family:var(--font-mono); font-size:15px; color:var(--ink); margin-top:4px;}
+.kcal-hero-left{font-family:var(--font-mono); font-size:14px; font-weight:600; color:var(--lime); margin-top:6px;}
+
+/* Day overview: stacked split bars with a legend underneath */
+.dash-card{
+  display:grid; gap:18px; background:var(--bg-panel); border:1px solid var(--line);
+  border-radius:14px; padding:16px 18px; margin-bottom:16px;
+}
+.dash-label{
+  font-size:12px; font-weight:600; color:var(--ink-dim); text-transform:uppercase;
+  letter-spacing:.05em; margin-bottom:8px;
+}
+.dash-bar{display:flex; height:10px; border-radius:5px; overflow:hidden; background:var(--line); gap:2px;}
+.dash-bar span{height:100%; min-width:0; transition:width 0.4s ease;}
+.dash-legend{
+  display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:10px;
+  font-family:var(--font-mono); font-size:12px; color:var(--ink-dim);
+}
+.dash-legend span{display:inline-flex; align-items:center; gap:6px;}
+.dash-dot{width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0;}
+
 .stat{
   position:relative; min-width:0; background:var(--bg-panel); border-radius:10px;
   padding:12px 4px 10px; text-align:center;

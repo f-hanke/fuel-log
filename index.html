@@ -48,18 +48,21 @@
   </div>
 
   <div id="dayView">
-    <div class="ring-row">
-      <div class="stat kcal">
-        <div class="stat-ring-wrap">
-          <svg class="stat-ring-circle" viewBox="0 0 64 64">
-            <circle class="stat-ring-track" cx="32" cy="32" r="27"/>
-            <circle class="stat-ring-fill" id="ringKcal" cx="32" cy="32" r="27" transform="rotate(-90 32 32)"/>
-          </svg>
-          <span class="num" id="statKcal">0</span>
-        </div>
-        <div class="label" data-i18n="labelKcal">kcal</div>
-        <div class="sub" id="statKcalSub">von 3200</div>
+    <div class="kcal-hero">
+      <div class="stat-ring-wrap">
+        <svg class="stat-ring-circle" viewBox="0 0 64 64">
+          <circle class="stat-ring-track" cx="32" cy="32" r="27"/>
+          <circle class="stat-ring-fill" id="ringKcal" cx="32" cy="32" r="27" transform="rotate(-90 32 32)"/>
+        </svg>
+        <span class="num" id="statKcal">0</span>
       </div>
+      <div class="kcal-hero-info">
+        <div class="kcal-hero-label" data-i18n="labelKcal">kcal</div>
+        <div class="kcal-hero-target" id="statKcalSub">von 3200</div>
+        <div class="kcal-hero-left" id="statKcalLeft"></div>
+      </div>
+    </div>
+    <div class="ring-row macro-row">
       <div class="stat protein">
         <div class="stat-ring-wrap">
           <svg class="stat-ring-circle" viewBox="0 0 64 64">
@@ -172,6 +175,20 @@
       </div>
       <div class="meal-macros" id="catMacrosSnacks"></div>
       <div id="mealListSnacks" class="hidden"></div>
+    </div>
+
+    <div class="section-title" data-i18n="dashTitle">Tagesübersicht</div>
+    <div class="dash-card">
+      <div>
+        <div class="dash-label" data-i18n="dashByMeal">Kalorien nach Mahlzeit</div>
+        <div class="dash-bar" id="dashMealBar"></div>
+        <div class="dash-legend" id="dashMealLegend"></div>
+      </div>
+      <div>
+        <div class="dash-label" data-i18n="dashByMacro">Energie nach Makro</div>
+        <div class="dash-bar" id="dashMacroBar"></div>
+        <div class="dash-legend" id="dashMacroLegend"></div>
+      </div>
     </div>
 
     <div class="page-preview" id="toggleWeek">

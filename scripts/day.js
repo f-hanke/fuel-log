@@ -41,6 +41,35 @@ function categoryOf(entry){
   return MEAL_CATEGORIES[entry.category] ? entry.category : 'snacks';
 }
 
+// Day overview under the meals: two stacked bars, one splitting the day's kcal
+// by meal, one splitting its energy by macro (protein/carbs 4 kcal/g, fat 9).
+// Each bar comes with a legend showing the share of each part.
+function renderDashboard(totals){
+  const kcalByCat = { breakfast: 0, lunch: 0, dinner: 0, snacks: 0 };
+  currentEntries.forEach((e) => { kcalByCat[categoryOf(e)] += Number(e.kcal) || 0; });
+  renderSplit('dashMealBar', 'dashMealLegend', [
+    { label: t('catBreakfast'), value: kcalByCat.breakfast, color: 'var(--lime)' },
+    { label: t('catLunch'), value: kcalByCat.lunch, color: '#5FB7E8' },
+    { label: t('catDinner'), value: kcalByCat.dinner, color: 'var(--amber)' },
+    { label: t('catSnacks'), value: kcalByCat.snacks, color: 'var(--ink-dim)' },
+  ]);
+  renderSplit('dashMacroBar', 'dashMacroLegend', [
+    { label: t('labelProtein'), value: (totals.protein || 0) * 4, color: 'var(--amber)' },
+    { label: t('labelCarbs'), value: (totals.carbs || 0) * 4, color: '#5FB7E8' },
+    { label: t('labelFat'), value: (totals.fat || 0) * 9, color: 'var(--red)' },
+  ]);
+}
+function renderSplit(barId, legendId, parts){
+  const sum = parts.reduce((s, p) => s + p.value, 0);
+  const share = (v) => (sum > 0 ? Math.round((v / sum) * 100) : 0);
+  document.getElementById(barId).innerHTML = parts
+    .map((p) => `<span style="width:${sum > 0 ? (p.value / sum) * 100 : 0}%;background:${p.color}"></span>`)
+    .join('');
+  document.getElementById(legendId).innerHTML = parts
+    .map((p) => `<span><i class="dash-dot" style="background:${p.color}"></i>${escapeHtml(p.label)} ${share(p.value)}%</span>`)
+    .join('');
+}
+
 // Rough, fixed split of the day's kcal target across the 4 meals — there's no
 // per-meal target setting, just this approximate breakdown, used to drive
 // each meal-group header's circular progress ring (below).
@@ -143,6 +172,10 @@ async function renderDay(){
   // outline (the SVG ring-fill path) fills clockwise from 0-100% via stroke-dashoffset
   // — pathLength="100" on the path means dashoffset can be set directly as a percentage.
   setStatTile('statKcal', 'statKcalSub', 'ringKcal', totals.kcal, TARGETS.kcal);
+  const kcalDiff = Math.round(TARGETS.kcal - totals.kcal);
+  document.getElementById('statKcalLeft').textContent = kcalDiff >= 0
+    ? `${kcalDiff} ${t('kcalLeft')}`
+    : `${-kcalDiff} ${t('kcalOver')}`;
   setStatTile('statProtein', 'statProteinSub', 'ringProtein', totals.protein, TARGETS.protein);
   setStatTile('statCarbs', 'statCarbsSub', 'ringCarbs', totals.carbs, TARGETS.carbs);
   setStatTile('statFat', 'statFatSub', 'ringFat', totals.fat, TARGETS.fat);
@@ -153,6 +186,7 @@ async function renderDay(){
   currentEntries.forEach((e, idx) => grouped[categoryOf(e)].push({ ...e, idx }));
 
   Object.keys(MEAL_CATEGORIES).forEach((cat) => renderMealGroup(cat, grouped[cat]));
+  renderDashboard(totals);
 
   // Keeps the 3 preview cards (defined in week-month.js / weight.js) fresh
   // every time the day view renders — not awaited, each just fills in its
