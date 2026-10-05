@@ -171,25 +171,11 @@ function renderMealGroup(category, entries){
   document.getElementById('catKcal' + suffix).textContent =
     `${Math.round(kcalTotal)}/${Math.round(mealTarget)} kcal`;
 
-  // Macro overview for this meal: the grams of each macro, plus one bar that
-  // splits the meal's energy between them (protein and carbs 4 kcal/g, fat 9)
+  // Macro totals for this meal, shown small under the header (kcal is the
+  // headline number, so the macros stay quiet next to it)
   const sum = (key) => entries.reduce((s, e) => s + (Number(e[key]) || 0), 0);
-  const protein = sum('protein'), carbs = sum('carbs'), fat = sum('fat');
-  const pKcal = protein * 4, cKcal = carbs * 4, fKcal = fat * 9;
-  const macroKcal = pKcal + cKcal + fKcal;
-  const seg = (kcal) => (macroKcal > 0 ? (kcal / macroKcal) * 100 : 0);
-  document.getElementById('catMacros' + suffix).innerHTML = `
-    <div class="meal-macro-split">
-      <span class="protein" style="width:${seg(pKcal)}%"></span>
-      <span class="carbs" style="width:${seg(cKcal)}%"></span>
-      <span class="fat" style="width:${seg(fKcal)}%"></span>
-    </div>
-    <div class="meal-macro-grid">
-      <div class="meal-macro protein"><span class="meal-macro-label">${t('labelProtein')}</span><span class="meal-macro-val">${fmtMacro(protein)} g</span></div>
-      <div class="meal-macro carbs"><span class="meal-macro-label">${t('labelCarbs')}</span><span class="meal-macro-val">${fmtMacro(carbs)} g</span></div>
-      <div class="meal-macro fat"><span class="meal-macro-label">${t('labelFat')}</span><span class="meal-macro-val">${fmtMacro(fat)} g</span></div>
-    </div>
-  `;
+  document.getElementById('catMacros' + suffix).textContent =
+    `P ${fmtMacro(sum('protein'))} g · C ${fmtMacro(sum('carbs'))} g · F ${fmtMacro(sum('fat'))} g`;
 
   const ring = document.getElementById('catRing' + suffix);
   ring.style.strokeDasharray = CAT_RING_CIRCUMFERENCE;
