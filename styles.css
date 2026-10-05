@@ -248,25 +248,26 @@ body{
 .meal-group-header:hover .cat-add-btn{border-color:var(--lime); color:var(--lime);}
 .group-chevron{color:var(--ink-dim); font-size:14px;}
 
-/* Per-meal macro overview, always visible under the header: P/C/F in grams,
-   with a thin bar showing how much of that meal's macro share has been logged.
-   Colors match the day's stat tiles above. */
-.meal-macros{display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; margin:0 2px 12px;}
-.meal-macro{min-width:0;}
-.meal-macro-top{
-  display:flex; justify-content:space-between; align-items:baseline; gap:6px;
-  font-family:var(--font-mono); font-size:12px; color:var(--ink-dim);
+/* Per-meal macro overview, always visible under the header: one bar splitting
+   the meal's energy between protein, carbs and fat, and the three gram values
+   below it. Colors match the day's stat tiles above. */
+.meal-macros{margin:0 2px 14px;}
+.meal-macro-split{
+  display:flex; height:6px; border-radius:3px; overflow:hidden; background:var(--line); gap:2px;
 }
-.meal-macro-label{font-weight:600;}
-.meal-macro-val{color:var(--ink); white-space:nowrap;}
-.meal-macro-target{color:var(--ink-dim);}
-.meal-macro-bar{height:4px; background:var(--line); border-radius:2px; margin-top:6px; overflow:hidden;}
-.meal-macro-fill{height:100%; border-radius:2px; transition:width 0.4s ease;}
-.meal-macro.protein .meal-macro-fill{background:var(--amber);}
+.meal-macro-split span{height:100%; transition:width 0.4s ease;}
+.meal-macro-split .protein{background:var(--amber);}
+.meal-macro-split .carbs{background:#5FB7E8;}
+.meal-macro-split .fat{background:var(--red);}
+.meal-macro-grid{display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; margin-top:10px;}
+.meal-macro{min-width:0;}
+.meal-macro-label{
+  display:block; font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase;
+  color:var(--ink-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.meal-macro-val{display:block; font-family:var(--font-mono); font-weight:600; font-size:15px; color:var(--ink); margin-top:2px;}
 .meal-macro.protein .meal-macro-label{color:var(--amber);}
-.meal-macro.carbs .meal-macro-fill{background:#5FB7E8;}
 .meal-macro.carbs .meal-macro-label{color:#5FB7E8;}
-.meal-macro.fat .meal-macro-fill{background:var(--red);}
 .meal-macro.fat .meal-macro-label{color:var(--red);}
 
 .fab-add{
