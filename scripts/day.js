@@ -171,6 +171,25 @@ function renderMealGroup(category, entries){
   document.getElementById('catKcal' + suffix).textContent =
     `${Math.round(kcalTotal)}/${Math.round(mealTarget)} kcal`;
 
+  // Macro overview for this meal: each macro against its share of the daily
+  // target, using the same share as the kcal ring above
+  const share = MEAL_KCAL_SHARE[category];
+  const sum = (key) => entries.reduce((s, e) => s + (Number(e[key]) || 0), 0);
+  const macros = [
+    { label: 'P', cls: 'protein', value: sum('protein'), target: TARGETS.protein * share },
+    { label: 'C', cls: 'carbs', value: sum('carbs'), target: TARGETS.carbs * share },
+    { label: 'F', cls: 'fat', value: sum('fat'), target: TARGETS.fat * share },
+  ];
+  document.getElementById('catMacros' + suffix).innerHTML = macros.map((m) => `
+    <div class="meal-macro ${m.cls}">
+      <div class="meal-macro-top">
+        <span class="meal-macro-label">${m.label}</span>
+        <span class="meal-macro-val">${fmtMacro(m.value)}g<span class="meal-macro-target"> / ${Math.round(m.target)}</span></span>
+      </div>
+      <div class="meal-macro-bar"><div class="meal-macro-fill" style="width:${pct(m.value, m.target)}%"></div></div>
+    </div>
+  `).join('');
+
   const ring = document.getElementById('catRing' + suffix);
   ring.style.strokeDasharray = CAT_RING_CIRCUMFERENCE;
   ring.style.strokeDashoffset = CAT_RING_CIRCUMFERENCE * (1 - pct(kcalTotal, mealTarget) / 100);
