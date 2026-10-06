@@ -287,7 +287,7 @@ const QUERY_ALIASES = { ei: ['eier'] };
 // it can be found again without searching — shown at the top of the Suche tab
 // when it's empty, and ranked above fresh results when it matches a search.
 const RECENT_KEY = 'fuellog:recentProducts';
-const RECENT_MAX = 10;
+const RECENT_MAX = 30;
 
 function loadRecent(){
   // Entries saved before USDA was removed are dropped (they carry an fdcId)
