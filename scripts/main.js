@@ -33,10 +33,20 @@ if ("serviceWorker" in navigator) {
 
   // Once a new service worker takes control (new version activated),
   // reload automatically so the update is visible without closing the app —
-  // this never touches localStorage, so logged meals are never affected
+  // this never touches localStorage, so logged meals are never affected.
+  // Only do this for a genuine update though: "controllerchange" also fires
+  // the very first time a service worker is ever installed for this page
+  // (there's no real update to show then, the page just loaded normally a
+  // moment ago). Reloading on that first-ever install is pointless at best —
+  // and if the browser can't persist the registration (private browsing,
+  // storage pressure, some iOS Safari / PWA situations), it installs "fresh"
+  // on every single visit, so that pointless reload becomes a permanent
+  // reload loop. hadController (read before any of this can happen) tells
+  // the two cases apart.
+  const hadController = !!navigator.serviceWorker.controller;
   let reloadedForUpdate = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (reloadedForUpdate) return;
+    if (!hadController || reloadedForUpdate) return;
     reloadedForUpdate = true;
     window.location.reload();
   });
