@@ -431,7 +431,14 @@ async function startScan(){
   document.getElementById('scannerWrap').classList.remove('hidden');
   document.getElementById('scanBtn').classList.add('hidden');
   try{
-    codeReader = new ZXing.BrowserMultiFormatReader();
+    // Without TRY_HARDER, ZXing only tries decoding a 1D barcode read left-to-
+    // right exactly as the frame comes in. With it, it also tries the frame
+    // rotated 90° (barcode held sideways/portrait) and the bar order reversed
+    // (barcode held upside down) — together that covers it being scanned from
+    // any direction, not just held perfectly level.
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    codeReader = new ZXing.BrowserMultiFormatReader(hints);
     await codeReader.decodeFromVideoDevice(undefined, 'scannerVideo', (result) => {
       if(result){
         const code = result.getText();
