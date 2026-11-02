@@ -25,7 +25,7 @@ const TRANSLATIONS_EN = {
   weightNoDataPeriod: 'No entries in this period.',
   weightAddBtn: 'Log weight',
   showAll: 'Show all', showLess: 'Show less', previewEmpty: 'No data yet',
-  wsKcalAvg: 'Avg kcal/day', wsProteinAvg: 'Avg protein/day', wsDaysLogged: 'Days logged',
+  wsKcalAvg: 'Avg kcal/day', wsProteinAvg: 'Avg protein/day', wsDaysLogged: 'Days logged', weightDeltaLabel: 'Weight',
   backToDay: 'Back to day',
   loadingMonth: 'Loading month…',
   legendNone: 'Not logged', legendUnder: 'Under target', legendOnTarget: 'On target', legendOver: 'Over target',

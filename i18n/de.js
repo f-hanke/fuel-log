@@ -25,7 +25,7 @@ const TRANSLATIONS_DE = {
   weightNoDataPeriod: 'Keine Einträge in diesem Zeitraum.',
   weightAddBtn: 'Gewicht eintragen',
   showAll: 'Alle anzeigen', showLess: 'Weniger anzeigen', previewEmpty: 'Noch keine Daten',
-  wsKcalAvg: 'Ø kcal/Tag', wsProteinAvg: 'Ø Protein/Tag', wsDaysLogged: 'Tage geloggt',
+  wsKcalAvg: 'Ø kcal/Tag', wsProteinAvg: 'Ø Protein/Tag', wsDaysLogged: 'Tage geloggt', weightDeltaLabel: 'Gewicht',
   backToDay: 'Zurück zum Tag',
   loadingMonth: 'Lade Monat…',
   legendNone: 'Nicht geloggt', legendUnder: 'Unter Ziel', legendOnTarget: 'Im Ziel', legendOver: 'Über Ziel',

@@ -44,6 +44,33 @@ function filterWeightsByPeriod(list, period){
   return list.filter((w) => parseDateKey(w.date) >= cutoff);
 }
 
+// Weight change between two dates (inclusive), using the earliest and latest
+// weigh-in actually logged within that range — used by the week/month
+// summaries. Needs at least 2 weigh-ins in range to show a trend; returns
+// null otherwise, same "not enough data" convention as avgDailyWeightChange.
+function weightChangeInRange(start, end){
+  const inRange = loadWeights().filter((w) => {
+    const d = parseDateKey(w.date);
+    return d >= start && d <= end;
+  });
+  if(inRange.length < 2) return null;
+  return inRange[inRange.length - 1].weight - inRange[0].weight;
+}
+
+// Formats a weight change for the week/month summary tiles: an up/down arrow
+// plus a signed number, so the direction reads at a glance without having to
+// parse the sign on the number itself — "▲ +1.2" / "▼ -0.8" / "– 0". No "kg"
+// suffix (unlike the weight page's own Verlauf stat) — these tiles are
+// narrower, and the label underneath ("Gewicht") already says what it is.
+function fmtWeightDelta(change){
+  if(change == null) return '–';
+  const rounded = Math.round(change * 10) / 10;
+  if(rounded === 0) return '– 0';
+  const arrow = rounded > 0 ? '▲' : '▼';
+  const sign = rounded > 0 ? '+' : '';
+  return `${arrow} ${sign}${rounded.toLocaleString(undefined, { maximumFractionDigits: 1 })}`;
+}
+
 // Average daily change across a list (already sorted ascending by date):
 // total change divided by the actual number of days between the first and
 // last entry — not just "change / entry count", since weigh-ins are rarely
@@ -132,17 +159,15 @@ async function renderWeight(){
     document.getElementById('weightCurrent').textContent = '–';
     document.getElementById('weightChange').textContent = '–';
     document.getElementById('weightAvg').textContent = '–';
-    document.getElementById('weightCount').textContent = 0;
     document.getElementById('weightChartWrap').innerHTML = `<div class="search-hint">${t('weightEmpty')}</div>`;
     document.getElementById('weightHistory').innerHTML = '';
     return;
   }
 
-  // Current/change/average/count and the chart all come from the period-
-  // filtered list, so switching 30/90/180/Alle changes the whole overview
+  // Current/change/average and the chart all come from the period-filtered
+  // list, so switching 30/90/180/Alle changes the whole overview
   // consistently — not just the chart underneath it
   const list = filterWeightsByPeriod(all, weightPeriod);
-  document.getElementById('weightCount').textContent = list.length;
 
   if(list.length === 0){
     document.getElementById('weightCurrent').textContent = '–';

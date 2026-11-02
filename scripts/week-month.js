@@ -63,6 +63,7 @@ async function renderWeek(){
   document.getElementById('wsKcalAvg').textContent = avgKcal;
   document.getElementById('wsProteinAvg').textContent = avgProtein + 'g';
   document.getElementById('wsDaysLogged').textContent = loggedDays.length + '/7';
+  document.getElementById('wsWeightChange').textContent = fmtWeightDelta(weightChangeInRange(monday, sunday));
 
   listEl.innerHTML = '';
   results.forEach(r=>{
@@ -132,6 +133,8 @@ async function renderMonth(){
   document.getElementById('msKcalAvg').textContent = avgKcal;
   document.getElementById('msProteinAvg').textContent = avgProtein + 'g';
   document.getElementById('msDaysLogged').textContent = loggedDays.length + '/' + daysInMonth;
+  document.getElementById('msWeightChange').textContent =
+    fmtWeightDelta(weightChangeInRange(first, new Date(year, month, daysInMonth)));
 
   // A Mon-Sun calendar grid, cell color = how close that day was to target
   heatEl.innerHTML = '';
