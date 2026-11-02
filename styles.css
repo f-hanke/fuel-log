@@ -540,6 +540,9 @@ label.mini{
   border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:10px;
 }
 .week-summary div{text-align:center; flex:1;}
+/* The weight page has a 4th stat (avg/day) — a 2x2 grid instead of a single
+   row of 4 keeps each number readable instead of cramped */
+.week-summary.weight-summary{display:grid; grid-template-columns:repeat(2, 1fr); gap:14px 8px;}
 .week-summary .wsnum{font-family:var(--font-display); font-weight:800; font-size:20px; color:var(--lime);}
 .week-summary .wslabel{font-family:var(--font-body); font-weight:600; font-size:10.5px; color:var(--ink-dim); letter-spacing:0.3px; text-transform:uppercase; margin-top:3px;}
 

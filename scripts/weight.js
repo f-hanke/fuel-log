@@ -7,12 +7,53 @@
 // last 5 — reset to collapsed every time the page is freshly opened
 let weightHistoryExpanded = false;
 
+// How far back the chart/stats look: '30'/'90'/'180' days, or 'all'. Kept
+// across sessions (like language/theme) since it's a viewing preference, not
+// something you'd want to re-pick every time — unlike weightHistoryExpanded
+// above, which is reset deliberately so the history always opens collapsed.
+const WEIGHT_PERIODS = ['30', '90', '180', 'all'];
+function loadWeightPeriod(){
+  try{
+    const v = localStorage.getItem('fuellog:weightPeriod');
+    return WEIGHT_PERIODS.includes(v) ? v : 'all';
+  }catch(e){ return 'all'; }
+}
+let weightPeriod = loadWeightPeriod();
+
 document.getElementById('toggleWeight').addEventListener('click', async ()=>{
   showView('weight');
   weightHistoryExpanded = false;
   await renderWeight();
 });
 document.getElementById('weightBack').addEventListener('click', ()=> showView('day'));
+
+document.querySelectorAll('#weightPeriodToggle .mode-btn').forEach((btn)=>{
+  btn.addEventListener('click', async ()=>{
+    weightPeriod = btn.getAttribute('data-period');
+    try{ localStorage.setItem('fuellog:weightPeriod', weightPeriod); }catch(e){}
+    await renderWeight();
+  });
+});
+
+// Entries from the last N days (inclusive of today), or everything for 'all'
+function filterWeightsByPeriod(list, period){
+  if(period === 'all') return list;
+  const cutoff = new Date();
+  cutoff.setHours(0, 0, 0, 0);
+  cutoff.setDate(cutoff.getDate() - (Number(period) - 1));
+  return list.filter((w) => parseDateKey(w.date) >= cutoff);
+}
+
+// Average daily change across a list (already sorted ascending by date):
+// total change divided by the actual number of days between the first and
+// last entry — not just "change / entry count", since weigh-ins are rarely
+// logged every single day
+function avgDailyWeightChange(list){
+  if(list.length < 2) return null;
+  const days = (parseDateKey(list[list.length - 1].date) - parseDateKey(list[0].date)) / 86400000;
+  if(days <= 0) return null;
+  return (list[list.length - 1].weight - list[0].weight) / days;
+}
 
 function loadWeights(){
   try{
@@ -80,33 +121,60 @@ document.getElementById('weightModalSaveBtn').addEventListener('click', async ()
 });
 
 async function renderWeight(){
-  const list = loadWeights();
+  const all = loadWeights();
 
-  document.getElementById('weightCount').textContent = list.length;
-  if(list.length === 0){
+  document.getElementById('weightPeriodToggle').classList.toggle('hidden', all.length === 0);
+  document.querySelectorAll('#weightPeriodToggle .mode-btn').forEach((btn)=>{
+    btn.classList.toggle('active', btn.getAttribute('data-period') === weightPeriod);
+  });
+
+  if(all.length === 0){
     document.getElementById('weightCurrent').textContent = '–';
     document.getElementById('weightChange').textContent = '–';
+    document.getElementById('weightAvg').textContent = '–';
+    document.getElementById('weightCount').textContent = 0;
     document.getElementById('weightChartWrap').innerHTML = `<div class="search-hint">${t('weightEmpty')}</div>`;
     document.getElementById('weightHistory').innerHTML = '';
     return;
   }
 
-  const current = list[list.length - 1].weight;
-  const change = current - list[0].weight;
-  document.getElementById('weightCurrent').textContent = current.toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' kg';
-  document.getElementById('weightChange').textContent =
-    (change >= 0 ? '+' : '') + change.toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' kg';
+  // Current/change/average/count and the chart all come from the period-
+  // filtered list, so switching 30/90/180/Alle changes the whole overview
+  // consistently — not just the chart underneath it
+  const list = filterWeightsByPeriod(all, weightPeriod);
+  document.getElementById('weightCount').textContent = list.length;
 
-  document.getElementById('weightChartWrap').innerHTML = list.length >= 2
-    ? buildWeightChart(list)
-    : `<div class="search-hint">${t('weightNeedMore')}</div>`;
+  if(list.length === 0){
+    document.getElementById('weightCurrent').textContent = '–';
+    document.getElementById('weightChange').textContent = '–';
+    document.getElementById('weightAvg').textContent = '–';
+    document.getElementById('weightChartWrap').innerHTML = `<div class="search-hint">${t('weightNoDataPeriod')}</div>`;
+  } else {
+    const current = list[list.length - 1].weight;
+    const change = current - list[0].weight;
+    const avg = avgDailyWeightChange(list);
+    document.getElementById('weightCurrent').textContent = current.toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' kg';
+    document.getElementById('weightChange').textContent = list.length >= 2
+      ? (change >= 0 ? '+' : '') + change.toLocaleString(undefined, { maximumFractionDigits: 1 }) + ' kg'
+      : '–';
+    document.getElementById('weightAvg').textContent = avg != null
+      ? (avg >= 0 ? '+' : '') + avg.toLocaleString(undefined, { maximumFractionDigits: 2 })
+      : '–';
+    document.getElementById('weightChartWrap').innerHTML = list.length >= 2
+      ? buildWeightChart(list)
+      : `<div class="search-hint">${t('weightNeedMore')}</div>`;
+  }
 
+  // The history list below is always the full log, regardless of the period
+  // toggle above — it's there to find/edit/delete any past entry, not just
+  // the ones currently charted.
+  //
   // Tapping a row opens the modal pre-filled with that day for quick editing;
   // the ✕ deletes it directly (stopPropagation so it doesn't also open the
   // modal). Collapsed to the last 5 by default — "Alle anzeigen" below shows
   // the rest, re-rendering with weightHistoryExpanded flipped.
   const HISTORY_COLLAPSED_COUNT = 5;
-  const reversed = [...list].reverse();
+  const reversed = [...all].reverse();
   const shown = weightHistoryExpanded ? reversed : reversed.slice(0, HISTORY_COLLAPSED_COUNT);
 
   const historyEl = document.getElementById('weightHistory');
@@ -132,10 +200,10 @@ async function renderWeight(){
     });
   });
 
-  if(list.length > HISTORY_COLLAPSED_COUNT){
+  if(all.length > HISTORY_COLLAPSED_COUNT){
     const moreBtn = document.createElement('button');
     moreBtn.className = 'weight-show-all';
-    moreBtn.textContent = weightHistoryExpanded ? t('showLess') : `${t('showAll')} (${list.length})`;
+    moreBtn.textContent = weightHistoryExpanded ? t('showLess') : `${t('showAll')} (${all.length})`;
     moreBtn.addEventListener('click', () => {
       weightHistoryExpanded = !weightHistoryExpanded;
       renderWeight();

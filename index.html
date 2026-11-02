@@ -256,9 +256,17 @@
   <div id="weightView" class="week-panel hidden">
     <div class="section-title" data-i18n="weightTitle">Gewicht</div>
 
-    <div class="week-summary">
+    <div class="mode-toggle" id="weightPeriodToggle">
+      <button class="mode-btn" data-period="30">30</button>
+      <button class="mode-btn" data-period="90">90</button>
+      <button class="mode-btn" data-period="180">180</button>
+      <button class="mode-btn" data-period="all" data-i18n="periodAll">Alle</button>
+    </div>
+
+    <div class="week-summary weight-summary">
       <div><div class="wsnum" id="weightCurrent">–</div><div class="wslabel" data-i18n="weightCurrentLabel">Aktuell</div></div>
       <div><div class="wsnum" id="weightChange">–</div><div class="wslabel" data-i18n="weightChangeLabel">Verlauf</div></div>
+      <div><div class="wsnum" id="weightAvg">–</div><div class="wslabel" data-i18n="weightAvgLabel">Ø kg/Tag</div></div>
       <div><div class="wsnum" id="weightCount">0</div><div class="wslabel" data-i18n="weightCountLabel">Einträge</div></div>
     </div>
 
