@@ -548,6 +548,14 @@
   </div>
 </div>
 
+<!-- A brief "Rückgängig" affordance shown after adding an entry from any of
+     the four Eintrag-hinzufügen tabs — lives at the body root (not inside
+     any one view) so it floats over whichever view is current underneath it. -->
+<div class="undo-toast" id="undoToast">
+  <span id="undoToastText"></span>
+  <button id="undoToastBtn" data-i18n="undo">Rückgängig</button>
+</div>
+
 <script src="https://unpkg.com/@zxing/library@0.20.0/umd/index.min.js"></script>
 <script src="i18n/de.js"></script>
 <script src="i18n/en.js"></script>

@@ -23,6 +23,7 @@ const TRANSLATIONS_DE = {
   weightAvgLabel: 'Ø kg/Tag', periodAll: 'Alle',
   weightEmpty: 'Noch kein Gewicht erfasst.', weightNeedMore: 'Noch ein Eintrag nötig für einen Graphen.',
   weightNoDataPeriod: 'Keine Einträge in diesem Zeitraum.',
+  undo: 'Rückgängig', entryAdded: 'Hinzugefügt', entriesAddedSuffix: 'Einträge hinzugefügt',
   weightAddBtn: 'Gewicht eintragen',
   showAll: 'Alle anzeigen', showLess: 'Weniger anzeigen', previewEmpty: 'Noch keine Daten',
   wsKcalAvg: 'Ø kcal/Tag', wsProteinAvg: 'Ø Protein/Tag', wsDaysLogged: 'Tage geloggt', weightDeltaLabel: 'Gewicht',

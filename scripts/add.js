@@ -80,12 +80,67 @@ document.getElementById('addModeBarcode').addEventListener('click', ()=> switchA
 document.getElementById('addModeCopy').addEventListener('click', ()=> switchAddTab('copy'));
 document.getElementById('addModeQuick').addEventListener('click', ()=> switchAddTab('quick'));
 
-// Shared by all three tabs: append the finished entry, persist, and return to the day view
+// --- Undo toast: a brief "Rückgängig" affordance after adding, shared by
+// all four tabs. Suche/Barcode/Schnelleingabe all funnel through addEntry()
+// below; Übernehmen is wired separately where it copies entries, since it
+// doesn't navigate away and can add several entries in one tap (a whole meal).
+let undoToastTimer = null;
+function showUndoToast(count, onUndo){
+  const toastEl = document.getElementById('undoToast');
+  document.getElementById('undoToastText').textContent =
+    count > 1 ? `${count} ${t('entriesAddedSuffix')}` : t('entryAdded');
+
+  // Replacing the button swaps out any previous click listener in one go —
+  // simpler than tracking/removing the old one by hand, and correct even if
+  // another add happens while the toast from the last one is still showing
+  clearTimeout(undoToastTimer);
+  const oldBtn = document.getElementById('undoToastBtn');
+  const btn = oldBtn.cloneNode(true);
+  oldBtn.replaceWith(btn);
+  btn.addEventListener('click', async () => {
+    clearTimeout(undoToastTimer);
+    toastEl.classList.remove('show');
+    await onUndo();
+  });
+
+  toastEl.classList.add('show');
+  undoToastTimer = setTimeout(() => toastEl.classList.remove('show'), 2000);
+}
+
+// Removes entries that were just pushed to currentEntries, by index — NOT by
+// object reference: renderDay() always reloads currentEntries fresh from
+// storage (day.js, currentEntries = entries, parsed anew from JSON), so by
+// the time "Rückgängig" is actually clicked, the object pushed a moment ago
+// no longer exists anywhere in the array, only an equivalent-looking new one
+// does. Each index is the position the entry was pushed to (addEntry/
+// pushCopiedEntry below always append, so that's currentEntries.length right
+// before the push) — correct as long as nothing else reshuffled the array in
+// the few seconds the toast is up, which holds for the normal case this is
+// meant for. Highest index first, so removing one doesn't shift the others.
+function undoAddedEntries(indices, markedBtns){
+  return async () => {
+    [...indices].sort((a, b) => b - a).forEach((idx) => {
+      if(idx >= 0 && idx < currentEntries.length) currentEntries.splice(idx, 1);
+    });
+    await saveEntries(currentDate, currentEntries);
+    renderDay();
+    (markedBtns || []).forEach((btn) => {
+      btn.textContent = '+';
+      btn.disabled = false;
+      btn.classList.remove('copied');
+    });
+  };
+}
+
+// Shared by Suche/Barcode/Schnelleingabe: append the finished entry, persist, and return to the day view
 async function addEntry(entry){
-  currentEntries.push({ category: document.getElementById('addCategory').value, ...entry });
+  const full = { category: document.getElementById('addCategory').value, ...entry };
+  const idx = currentEntries.length;
+  currentEntries.push(full);
   await saveEntries(currentDate, currentEntries);
   showView('day');
   renderDay();
+  showUndoToast(1, undoAddedEntries([idx]));
 }
 
 // --- Schnelleingabe tab: unchanged manual entry, just relocated onto this page ---
@@ -310,10 +365,18 @@ function rememberProduct(p){
   try{ localStorage.setItem(RECENT_KEY, JSON.stringify(list)); }catch(e){}
 }
 
-// Shows the recently used products as the idle content of the Suche tab
-function showRecents(){
+// Shows the recently used products as the idle content of the Suche tab —
+// or, with a query, those of them that match it. This is what the first
+// keystroke shows: an instant, local-only result from what's already been
+// used before, well before the network search (only triggered by Suchen/
+// Enter — see runSearch) has a chance to answer.
+function showRecents(query){
   const resultsEl = document.getElementById('searchResults');
-  searchResults = loadRecent();
+  const all = loadRecent();
+  searchResults = query
+    ? all.filter((r) => relevanceScore(r.product_name, query) > 0)
+        .sort((a, b) => relevanceScore(b.product_name, query) - relevanceScore(a.product_name, query))
+    : all;
   if(searchResults.length === 0){ resultsEl.innerHTML = ''; return; }
   renderResultRows(resultsEl, searchResults, 'searchNoResults');
   resultsEl.insertAdjacentHTML('afterbegin', `<div class="search-section-label">${t('recentLabel')}</div>`);
@@ -412,11 +475,20 @@ document.getElementById('searchBtn').addEventListener('click', runSearch);
 document.getElementById('searchInput').addEventListener('keydown', (e) => {
   if(e.key === 'Enter'){ e.preventDefault(); runSearch(); }
 });
+// Every keystroke re-filters the recently used products locally — no network
+// request, so it's instant. The actual Open Food Facts search only ever
+// happens via runSearch (Suchen button / Enter), which overwrites this.
+document.getElementById('searchInput').addEventListener('input', () => {
+  showRecents(document.getElementById('searchInput').value.trim());
+});
 wireResultContainer('searchResults', () => searchResults);
 
 // --- Barcode tab: scan with the camera (ZXing), then look the code up ---
 let barcodeResults = [];
 let codeReader = null;
+let scanStream = null;
+let scanTimer = null;
+let scanCanvas = null;
 
 function resetBarcodeTab(){
   stopScan();
@@ -425,34 +497,82 @@ function resetBarcodeTab(){
   barcodeResults = [];
 }
 
+// Scanning is done by hand here instead of via ZXing's own decodeFromVideoDevice
+// loop. Reason: a barcode can be held facing the camera from any side, but
+// ZXing's TRY_HARDER hint only adds a single extra 90°-rotated attempt per
+// frame internally — on some phones' camera feeds that still isn't enough to
+// catch every orientation (reported: only recognized once rotated exactly
+// 90°). This loop instead draws every frame at all four 90° rotations and
+// tries each one, so however the product is actually held, one of the four
+// always reads it "the right way up". Also asks for a higher-resolution feed
+// with continuous autofocus, which helps with a barcode held at an angle or
+// partly covered by a finger/shadow (more/sharper bars for the decoder to
+// work with) — though one that's mostly covered is still physically
+// unreadable; no algorithm can invent bars that were never captured.
 async function startScan(){
   document.getElementById('barcodeStatus').textContent = '';
   document.getElementById('barcodeResults').innerHTML = '';
   document.getElementById('scannerWrap').classList.remove('hidden');
   document.getElementById('scanBtn').classList.add('hidden');
   try{
-    // Without TRY_HARDER, ZXing only tries decoding a 1D barcode read left-to-
-    // right exactly as the frame comes in. With it, it also tries the frame
-    // rotated 90° (barcode held sideways/portrait) and the bar order reversed
-    // (barcode held upside down) — together that covers it being scanned from
-    // any direction, not just held perfectly level.
     const hints = new Map();
     hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
     codeReader = new ZXing.BrowserMultiFormatReader(hints);
-    await codeReader.decodeFromVideoDevice(undefined, 'scannerVideo', (result) => {
-      if(result){
-        const code = result.getText();
-        stopScan();
-        lookupBarcode(code);
-      }
+
+    // { ideal: ... } throughout — never a hard constraint — so this still
+    // works on a device without a rear/"environment" camera or without
+    // autofocus control (e.g. a laptop, used while testing) instead of
+    // failing outright with an OverconstrainedError
+    scanStream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1920 }, height: { ideal: 1080 },
+        advanced: [{ focusMode: 'continuous' }],
+      },
     });
+    const video = document.getElementById('scannerVideo');
+    video.srcObject = scanStream;
+    await video.play();
+
+    scanCanvas = document.createElement('canvas');
+    const ctx = scanCanvas.getContext('2d', { willReadFrequently: true });
+    const ROTATIONS = [0, 90, 180, 270];
+
+    scanTimer = setInterval(() => {
+      if(!video.videoWidth) return; // stream metadata not loaded yet
+      for(const angle of ROTATIONS){
+        const rotated = angle === 90 || angle === 270;
+        scanCanvas.width = rotated ? video.videoHeight : video.videoWidth;
+        scanCanvas.height = rotated ? video.videoWidth : video.videoHeight;
+        ctx.save();
+        ctx.translate(scanCanvas.width / 2, scanCanvas.height / 2);
+        ctx.rotate(angle * Math.PI / 180);
+        ctx.drawImage(video, -video.videoWidth / 2, -video.videoHeight / 2);
+        ctx.restore();
+        try{
+          const source = new ZXing.HTMLCanvasElementLuminanceSource(scanCanvas);
+          const bitmap = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(source));
+          const result = codeReader.decodeBitmap(bitmap);
+          stopScan();
+          lookupBarcode(result.getText());
+          return;
+        }catch(e){
+          // Not found at this rotation — the next one in ROTATIONS is tried,
+          // and if all four miss, the next tick (150ms later) tries again
+        }
+      }
+    }, 150);
   }catch(e){
     document.getElementById('barcodeStatus').textContent = t('cameraError');
     stopScan();
   }
 }
 function stopScan(){
-  if(codeReader){ codeReader.reset(); codeReader = null; }
+  if(scanTimer){ clearInterval(scanTimer); scanTimer = null; }
+  if(scanStream){ scanStream.getTracks().forEach((track) => track.stop()); scanStream = null; }
+  const video = document.getElementById('scannerVideo');
+  if(video.srcObject) video.srcObject = null;
+  codeReader = null;
   document.getElementById('scannerWrap').classList.add('hidden');
   document.getElementById('scanBtn').classList.remove('hidden');
 }
@@ -595,16 +715,19 @@ function renderCopyResults(){
 document.getElementById('copyResults').addEventListener('click', async (e) => {
   const entryBtn = e.target.closest('.copy-entry-add');
   if(entryBtn){
-    await copyEntryToToday(Number(entryBtn.getAttribute('data-idx')));
+    const pushedIdx = await copyEntryToToday(Number(entryBtn.getAttribute('data-idx')));
     markCopied(entryBtn);
+    showUndoToast(1, undoAddedEntries([pushedIdx], [entryBtn]));
     return;
   }
   const groupBtn = e.target.closest('.copy-group-add');
   if(groupBtn){
     const cat = groupBtn.getAttribute('data-category');
-    await copyGroupToToday(cat);
+    const pushedIdxs = await copyGroupToToday(cat);
     markCopied(groupBtn);
-    document.querySelectorAll(`.copy-group-entries[data-category="${cat}"] .copy-entry-add`).forEach(markCopied);
+    const entryBtns = [...document.querySelectorAll(`.copy-group-entries[data-category="${cat}"] .copy-entry-add`)];
+    entryBtns.forEach(markCopied);
+    showUndoToast(pushedIdxs.length, undoAddedEntries(pushedIdxs, [groupBtn, ...entryBtns]));
     return;
   }
   const toggle = e.target.closest('.copy-group-toggle');
@@ -626,15 +749,20 @@ function markCopied(btn){
 // few entries (or a couple of whole meals) at a time from the same source
 // day, so the page stays open (addBack always calls renderDay() on the way
 // out to catch up on whatever changed while it was)
+// Returns the index the entry landed at (see undoAddedEntries above for why
+// an index, not the object itself, is what the undo toast needs)
 function pushCopiedEntry(src){
   const { category, ...rest } = src;
   currentEntries.push({ category: document.getElementById('addCategory').value, ...rest });
+  return currentEntries.length - 1;
 }
 async function copyEntryToToday(idx){
-  pushCopiedEntry(copySourceEntries[idx]);
+  const pushedIdx = pushCopiedEntry(copySourceEntries[idx]);
   await saveEntries(currentDate, currentEntries);
+  return pushedIdx;
 }
 async function copyGroupToToday(category){
-  copySourceEntries.filter((e) => categoryOf(e) === category).forEach(pushCopiedEntry);
+  const pushedIdxs = copySourceEntries.filter((e) => categoryOf(e) === category).map(pushCopiedEntry);
   await saveEntries(currentDate, currentEntries);
+  return pushedIdxs;
 }

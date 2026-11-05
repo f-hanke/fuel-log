@@ -23,6 +23,7 @@ const TRANSLATIONS_EN = {
   weightAvgLabel: 'Avg kg/day', periodAll: 'All',
   weightEmpty: 'No weight logged yet.', weightNeedMore: 'One more entry needed for a chart.',
   weightNoDataPeriod: 'No entries in this period.',
+  undo: 'Undo', entryAdded: 'Added', entriesAddedSuffix: 'entries added',
   weightAddBtn: 'Log weight',
   showAll: 'Show all', showLess: 'Show less', previewEmpty: 'No data yet',
   wsKcalAvg: 'Avg kcal/day', wsProteinAvg: 'Avg protein/day', wsDaysLogged: 'Days logged', weightDeltaLabel: 'Weight',
