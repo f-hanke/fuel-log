@@ -566,9 +566,12 @@ label.mini{
 }
 .undo-toast.show{opacity:1; transform:translate(-50%, 0); pointer-events:auto;}
 .undo-toast #undoToastBtn{
-  background:none; border:none; color:var(--lime); cursor:pointer;
-  font-family:var(--font-body); font-weight:800; font-size:13.5px;
-  text-transform:uppercase; letter-spacing:0.03em; padding:2px 2px; flex-shrink:0;
+  /* A solid lime chip with fixed dark text (not var(--lime) as plain text) —
+     the toast itself already inverts ink/bg per theme, so lime-as-text would
+     sit on the "wrong" side of the contrast scale in one of the two themes */
+  background:var(--lime); color:#0F1613; border:none; border-radius:7px; cursor:pointer;
+  font-family:var(--font-body); font-weight:800; font-size:13px;
+  text-transform:uppercase; letter-spacing:0.03em; padding:6px 10px; flex-shrink:0;
 }
 
 .modal-overlay{
