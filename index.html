@@ -541,6 +541,24 @@
       <button class="add-submit" id="calcApplyBtn" data-i18n="calcApply">Berechnen &amp; übernehmen</button>
     </div>
 
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="dataLabel">Daten</div>
+      <div class="settings-hint" data-i18n="dataHint">Für den Umzug auf ein neues Gerät: alles als Datei sichern und dort wieder einlesen.</div>
+      <div class="lang-switch">
+        <button class="lang-opt" id="exportDataBtn" data-i18n="exportBtn">Exportieren</button>
+        <button class="lang-opt" id="importDataBtn" data-i18n="importBtn">Importieren</button>
+      </div>
+      <input type="file" id="importFileInput" accept="application/json" class="hidden">
+      <div class="settings-hint hidden" id="dataStatus"></div>
+      <div class="import-confirm hidden" id="importConfirmBox">
+        <div class="settings-hint" id="importConfirmText"></div>
+        <div class="modal-actions">
+          <button class="modal-btn-cancel" id="importCancelBtn" data-i18n="cancel">Abbrechen</button>
+          <button class="add-submit" id="importConfirmBtn" data-i18n="importConfirmBtn">Jetzt importieren</button>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-actions">
       <button class="modal-btn-cancel" id="settingsCloseBtn" data-i18n="close">Schließen</button>
       <button class="modal-btn-confirm modal-btn-save" id="settingsSaveBtn" data-i18n="save">Speichern</button>

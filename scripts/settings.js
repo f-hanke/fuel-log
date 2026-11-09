@@ -1,5 +1,7 @@
-// Settings modal: language/theme switches, editable daily targets, and the
-// BMR-based target calculator.
+// Settings modal: language/theme switches, editable daily targets, the
+// BMR-based target calculator, and export/import (moving to a new device,
+// or just a manual backup — the app has no account/cloud sync of its own,
+// everything lives in this browser's localStorage only).
 
 document.getElementById('langDeBtn').addEventListener('click', () => setLang('de'));
 document.getElementById('langEnBtn').addEventListener('click', () => setLang('en'));
@@ -81,4 +83,115 @@ document.getElementById('calcApplyBtn').addEventListener('click', ()=>{
   document.getElementById('tgProtein').value = proteinG;
   document.getElementById('tgCarbs').value = carbsG;
   document.getElementById('tgFat').value = fatG;
+});
+
+// --- Export/import: the only way data gets from one device to another ---
+// Every value is kept as its raw localStorage string (not re-parsed/re-
+// serialized) so a round-trip is always byte-identical to the original,
+// regardless of what shape any individual key's JSON happens to be.
+function collectBackupData(){
+  const data = {};
+  for(let i = 0; i < localStorage.length; i++){
+    const key = localStorage.key(i);
+    if(key && key.startsWith('fuellog:')) data[key] = localStorage.getItem(key);
+  }
+  return data;
+}
+function setDataStatus(text){
+  const el = document.getElementById('dataStatus');
+  el.textContent = text;
+  el.classList.toggle('hidden', !text);
+}
+
+document.getElementById('exportDataBtn').addEventListener('click', async () => {
+  const payload = { app: 'fuellog', version: 1, exportedAt: new Date().toISOString(), data: collectBackupData() };
+  const filename = `fuellog-backup-${fmtKey(new Date())}.json`;
+  const file = new File([JSON.stringify(payload, null, 2)], filename, { type: 'application/json' });
+
+  // The share sheet is what actually matches "send it to my other phone" —
+  // AirDrop/Mail/iCloud Drive/Messages all show up in it directly. Falls
+  // back to a plain download (e.g. on desktop browsers, or if sharing files
+  // isn't supported) rather than failing outright.
+  if(navigator.canShare && navigator.canShare({ files: [file] })){
+    try{
+      await navigator.share({ files: [file], title: filename });
+      setDataStatus(t('exportDone'));
+      return;
+    }catch(e){
+      if(e.name === 'AbortError'){ setDataStatus(''); return; } // user cancelled the share sheet
+      // anything else (e.g. share not actually wired up despite canShare==true): fall through
+    }
+  }
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  setDataStatus(t('exportDone'));
+});
+
+let pendingImportPayload = null;
+
+document.getElementById('importDataBtn').addEventListener('click', () => {
+  document.getElementById('importFileInput').click();
+});
+document.getElementById('importFileInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = ''; // so picking the exact same file again still fires 'change'
+  if(!file) return;
+  try{
+    const payload = JSON.parse(await file.text());
+    if(payload.app !== 'fuellog' || !payload.data || typeof payload.data !== 'object'){
+      setDataStatus(t('importInvalid'));
+      return;
+    }
+    pendingImportPayload = payload;
+    showImportConfirm(payload);
+  }catch(e){
+    setDataStatus(t('importInvalid'));
+  }
+});
+
+// Shows what's in the file and asks before touching anything — importing
+// replaces this device's data wholesale (see importConfirmBtn below), so
+// this is the one place that's worth a confirmation step for
+function showImportConfirm(payload){
+  setDataStatus('');
+  const keys = Object.keys(payload.data);
+  const days = keys.filter((k) => k.startsWith('fuellog:entries:')).length;
+  let weightCount = 0;
+  try{ weightCount = JSON.parse(payload.data['fuellog:weights'] || '[]').length; }catch(e){}
+  const dateText = payload.exportedAt ? fmtLabel(new Date(payload.exportedAt)) : '';
+
+  document.getElementById('importConfirmText').textContent =
+    `${t('importConfirmPrefix')} ${dateText} · ${days} ${t('importDaysWord')}, ${weightCount} ${t('importWeightsWord')}. ${t('importOverwriteWarn')}`;
+  document.getElementById('importConfirmBox').classList.remove('hidden');
+}
+document.getElementById('importCancelBtn').addEventListener('click', () => {
+  pendingImportPayload = null;
+  document.getElementById('importConfirmBox').classList.add('hidden');
+});
+document.getElementById('importConfirmBtn').addEventListener('click', () => {
+  if(!pendingImportPayload) return;
+  // Clear every existing fuellog: key first, then write the backup's own —
+  // so the result exactly matches the file, instead of merging in a way
+  // that could leave old data (e.g. a day not present in the backup) mixed
+  // in with the restored data
+  for(let i = localStorage.length - 1; i >= 0; i--){
+    const key = localStorage.key(i);
+    if(key && key.startsWith('fuellog:')) localStorage.removeItem(key);
+  }
+  Object.entries(pendingImportPayload.data).forEach(([key, value]) => localStorage.setItem(key, value));
+  pendingImportPayload = null;
+  document.getElementById('importConfirmBox').classList.add('hidden');
+  setDataStatus(t('importDone'));
+  // A full reload is simplest and safest here: language, theme, targets,
+  // the day currently on screen, weight history, recently-used products —
+  // every module already initializes correctly from localStorage on load,
+  // so this picks up the restored data everywhere at once instead of having
+  // to individually re-run each module's own render function by hand
+  setTimeout(() => location.reload(), 400);
 });
